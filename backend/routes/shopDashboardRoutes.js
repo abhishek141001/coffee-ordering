@@ -11,6 +11,8 @@ import {
   deleteMenuItem,
   toggleMenuItemAvailability,
   updateShopStatus,
+  updateShopLocation,
+  getShopDetails,
   getStats,
 } from '../controllers/shopDashboardController.js';
 
@@ -32,7 +34,9 @@ router.delete('/menu/:itemId', deleteMenuItem);
 router.patch('/menu/:itemId/availability', toggleMenuItemAvailability);
 
 // Shop
+router.get('/details', getShopDetails);
 router.patch('/status', updateShopStatus);
+router.patch('/location', updateShopLocation);
 router.get('/stats', getStats);
 
 export default router;

@@ -217,6 +217,55 @@ export const updateShopStatus = async (req, res) => {
   }
 };
 
+// --- Location ---
+
+export const updateShopLocation = async (req, res) => {
+  try {
+    const { latitude, longitude, address } = req.body;
+    if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+      return res.status(400).json({ error: 'latitude and longitude are required as numbers' });
+    }
+
+    req.shop.location = {
+      type: 'Point',
+      coordinates: [longitude, latitude],
+      address: address || req.shop.location.address || '',
+    };
+
+    await req.shop.save();
+    res.json({
+      message: 'Location updated',
+      location: {
+        latitude,
+        longitude,
+        address: req.shop.location.address,
+      },
+    });
+  } catch (error) {
+    console.error('Update location error:', error);
+    res.status(500).json({ error: 'Failed to update location' });
+  }
+};
+
+export const getShopDetails = async (req, res) => {
+  try {
+    const shop = req.shop;
+    res.json({
+      name: shop.name,
+      slug: shop.slug,
+      status: shop.status,
+      location: {
+        latitude: shop.location.coordinates[1],
+        longitude: shop.location.coordinates[0],
+        address: shop.location.address,
+      },
+    });
+  } catch (error) {
+    console.error('Get shop details error:', error);
+    res.status(500).json({ error: 'Failed to fetch shop details' });
+  }
+};
+
 // --- Stats ---
 
 export const getStats = async (req, res) => {
