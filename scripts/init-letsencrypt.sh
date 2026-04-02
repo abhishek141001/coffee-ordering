@@ -6,7 +6,7 @@
 set -e
 
 DOMAINS=(caffeineoperator.online www.caffeineoperator.online)
-EMAIL="" # Add your email for Let's Encrypt notifications
+EMAIL="ojhaabhishekraj14@gmail.com"
 DATA_PATH="./certbot"
 RSA_KEY_SIZE=4096
 
@@ -17,7 +17,8 @@ if [ -d "/var/lib/docker/volumes/$(basename $(pwd))_certbot_conf/_data/live/caff
 fi
 
 echo "### Creating dummy certificate for ${DOMAINS[0]} ..."
-mkdir -p "$DATA_PATH/conf/live/caffeineoperator.online"
+docker compose run --rm --entrypoint "\
+  mkdir -p /etc/letsencrypt/live/caffeineoperator.online" certbot
 docker compose run --rm --entrypoint "\
   openssl req -x509 -nodes -newkey rsa:$RSA_KEY_SIZE -days 1 \
     -keyout '/etc/letsencrypt/live/caffeineoperator.online/privkey.pem' \
