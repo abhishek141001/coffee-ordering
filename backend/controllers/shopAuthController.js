@@ -127,6 +127,50 @@ export const login = async (req, res) => {
   }
 };
 
+export const exchangeOneTimeToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Token is required' });
+    }
+
+    const shop = await Shop.findOne({ 'owner.oneTimeToken': token });
+
+    if (!shop) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    if (!shop.owner.oneTimeTokenExpiresAt || shop.owner.oneTimeTokenExpiresAt < new Date()) {
+      shop.owner.oneTimeToken = undefined;
+      shop.owner.oneTimeTokenExpiresAt = undefined;
+      await shop.save();
+      return res.status(401).json({ error: 'Token expired' });
+    }
+
+    // Clear the one-time token
+    shop.owner.oneTimeToken = undefined;
+    shop.owner.oneTimeTokenExpiresAt = undefined;
+
+    // Issue a new auth session token
+    shop.owner.authToken = crypto.randomUUID();
+    shop.owner.authTokenCreatedAt = new Date();
+    await shop.save();
+
+    res.json({
+      token: shop.owner.authToken,
+      shop: {
+        id: shop._id,
+        name: shop.name,
+        slug: shop.slug,
+      },
+    });
+  } catch (error) {
+    console.error('OTT exchange error:', error);
+    res.status(500).json({ error: 'Token exchange failed' });
+  }
+};
+
 export const logout = async (req, res) => {
   try {
     req.shop.owner.authToken = undefined;

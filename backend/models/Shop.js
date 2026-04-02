@@ -23,6 +23,8 @@ const shopSchema = new mongoose.Schema(
       password: { type: String },
       authToken: { type: String },
       authTokenCreatedAt: { type: Date },
+      oneTimeToken: { type: String },
+      oneTimeTokenExpiresAt: { type: Date },
     },
     location: {
       type: { type: String, enum: ['Point'], default: 'Point' },

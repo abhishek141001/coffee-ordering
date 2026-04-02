@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { shopApiCall } from "../../../../lib/shopAuth";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { shopApiCall, getShopToken, setShopToken, setShopInfo } from "../../../../lib/shopAuth";
+import { apiCall } from "../../../../lib/api";
 import type { Order } from "../../../../lib/types";
 
 function cap(s: string) {
@@ -19,6 +20,7 @@ const STATUS_STYLES: Record<string, string> = {
 export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const orderId = params.orderId as string;
 
   const [order, setOrder] = useState<Order | null>(null);
@@ -28,7 +30,25 @@ export default function OrderDetailPage() {
   const [acting, setActing] = useState(false);
 
   useEffect(() => {
-    async function fetchOrder() {
+    async function init() {
+      // Exchange one-time token if present
+      const ott = searchParams.get("ott");
+      if (ott) {
+        try {
+          const data = await apiCall<{
+            token: string;
+            shop: { id: string; name: string; slug: string };
+          }>("POST", "/shop-auth/exchange-ott", { token: ott });
+          setShopToken(data.token);
+          setShopInfo(data.shop);
+        } catch {
+          // OTT expired or invalid — fall through to normal auth
+        }
+        // Remove ott from URL without reload
+        router.replace(`/dashboard/orders/${orderId}`);
+      }
+
+      // Fetch order
       try {
         const data = await shopApiCall<{ order: Order }>(
           "GET",
@@ -41,8 +61,8 @@ export default function OrderDetailPage() {
         setLoading(false);
       }
     }
-    fetchOrder();
-  }, [orderId]);
+    init();
+  }, [orderId, searchParams, router]);
 
   const handleAccept = async () => {
     setActing(true);

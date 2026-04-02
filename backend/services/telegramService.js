@@ -1,4 +1,6 @@
+import crypto from 'crypto';
 import TelegramBot from 'node-telegram-bot-api';
+import Shop from '../models/Shop.js';
 import env from '../config/env.js';
 
 const dashboardUrl = env.dashboardUrl;
@@ -28,6 +30,22 @@ export const sendOrderNotification = async (order, user, chatId) => {
     return;
   }
 
+  // Generate a one-time token for auto-login from Telegram
+  let ottParam = '';
+  const shopId = order.shopId?._id;
+  if (shopId) {
+    try {
+      const ott = crypto.randomUUID();
+      await Shop.findByIdAndUpdate(shopId, {
+        'owner.oneTimeToken': ott,
+        'owner.oneTimeTokenExpiresAt': new Date(Date.now() + 5 * 60 * 1000), // 5 min expiry
+      });
+      ottParam = `?ott=${ott}`;
+    } catch (err) {
+      console.warn('Failed to generate one-time token:', err.message);
+    }
+  }
+
   const customerName = typeof user === 'string' ? user : (user?.username || 'Unknown');
   const customerPhone = typeof user === 'object' && user?.phone ? user.phone : null;
 
@@ -53,7 +71,7 @@ export const sendOrderNotification = async (order, user, chatId) => {
     `*Customer:* ${customerName}\n` +
     phoneLine +
     `*Order ID:* \`${order._id}\`\n` +
-    `🖥 [View on Dashboard](${dashboardUrl}/dashboard/orders/${order._id})\n\n` +
+    `🖥 [View on Dashboard](${dashboardUrl}/dashboard/orders/${order._id}${ottParam})\n\n` +
     `⏳ _Please respond within 2 minutes_`;
 
   const keyboard = {

@@ -18,34 +18,53 @@ export default function AdminShopsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const limit = 20;
 
-  useEffect(() => {
-    async function fetchShops() {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams({
-          page: String(page),
-          limit: String(limit),
-        });
-        if (search) params.set("search", search);
-        if (status !== "all") params.set("status", status);
+  async function fetchShops() {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      if (search) params.set("search", search);
+      if (status !== "all") params.set("status", status);
 
-        const data = await adminApiCall<{ shops: Shop[]; total: number }>(
-          "GET",
-          `/admin/shops?${params}`
-        );
-        setShops(data.shops);
-        setTotal(data.total);
-      } catch {
-        // auth redirect handled
-      } finally {
-        setLoading(false);
-      }
+      const data = await adminApiCall<{ shops: Shop[]; total: number }>(
+        "GET",
+        `/admin/shops?${params}`
+      );
+      setShops(data.shops);
+      setTotal(data.total);
+    } catch {
+      // auth redirect handled
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     fetchShops();
   }, [page, search, status]);
+
+  const toggleStatus = async (shop: Shop) => {
+    const newStatus = shop.status === "active" ? "inactive" : "active";
+    setTogglingId(shop._id);
+    try {
+      await adminApiCall("PUT", `/admin/shops/${shop._id}`, {
+        status: newStatus,
+      });
+      setShops((prev) =>
+        prev.map((s) => (s._id === shop._id ? { ...s, status: newStatus } : s))
+      );
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update status");
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   const totalPages = Math.ceil(total / limit);
 
@@ -100,6 +119,9 @@ export default function AdminShopsPage() {
                     <th className="text-left text-xs font-medium text-gray-400 px-6 py-4">
                       Created
                     </th>
+                    <th className="text-left text-xs font-medium text-gray-400 px-6 py-4">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -130,7 +152,8 @@ export default function AdminShopsPage() {
                       <td className="px-6 py-4">
                         <span
                           className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
-                            STATUS_COLORS[shop.status] || "bg-gray-500/20 text-gray-400"
+                            STATUS_COLORS[shop.status] ||
+                            "bg-gray-500/20 text-gray-400"
                           }`}
                         >
                           {shop.status}
@@ -140,6 +163,23 @@ export default function AdminShopsPage() {
                         {new Date(
                           (shop as Shop & { createdAt?: string }).createdAt || ""
                         ).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => toggleStatus(shop)}
+                          disabled={togglingId === shop._id}
+                          className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 ${
+                            shop.status === "active"
+                              ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                              : "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                          }`}
+                        >
+                          {togglingId === shop._id
+                            ? "..."
+                            : shop.status === "active"
+                            ? "Deactivate"
+                            : "Activate"}
+                        </button>
                       </td>
                     </tr>
                   ))}

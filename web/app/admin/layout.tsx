@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/admin/shops", label: "Shops", icon: "☕" },
   { href: "/admin/users", label: "Users", icon: "👤" },
   { href: "/admin/orders", label: "Orders", icon: "📋" },
+  { href: "/admin/payments", label: "Payments", icon: "💰" },
 ];
 
 export default function AdminLayout({

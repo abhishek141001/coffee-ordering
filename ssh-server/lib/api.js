@@ -33,7 +33,7 @@ export async function getLocationStatus(token) {
   return request('GET', '/auth/location-status', null, token);
 }
 
-export async function fetchNearbyShops(lat, lng, radius = 50000) {
+export async function fetchNearbyShops(lat, lng, radius = 500) {
   return request('GET', `/shops/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
 }
 

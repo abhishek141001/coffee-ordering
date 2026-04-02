@@ -1,6 +1,7 @@
 import Shop from '../models/Shop.js';
 import User from '../models/User.js';
 import Order from '../models/Order.js';
+import { processRefund } from '../services/razorpayService.js';
 
 // --- Platform Stats ---
 
@@ -288,5 +289,157 @@ export const getOrder = async (req, res) => {
   } catch (error) {
     console.error('Get order error:', error);
     res.status(500).json({ error: 'Failed to fetch order' });
+  }
+};
+
+// --- Settlements ---
+
+export const getSettlements = async (req, res) => {
+  try {
+    // Per-shop settlement summary: total collected, pending settlement, refunds
+    const [shopSettlements, refundSummary, pendingOrders] = await Promise.all([
+      Order.aggregate([
+        { $match: { status: 'accepted', shopId: { $exists: true, $ne: null } } },
+        {
+          $group: {
+            _id: '$shopId',
+            totalCollected: { $sum: { $ifNull: ['$totalPrice', '$price'] } },
+            orderCount: { $sum: 1 },
+          },
+        },
+        {
+          $lookup: {
+            from: 'shops',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'shop',
+          },
+        },
+        { $unwind: '$shop' },
+        {
+          $project: {
+            shopId: '$_id',
+            shopName: '$shop.name',
+            ownerName: '$shop.owner.name',
+            ownerEmail: '$shop.owner.email',
+            totalCollected: 1,
+            orderCount: 1,
+          },
+        },
+        { $sort: { totalCollected: -1 } },
+      ]),
+      Order.aggregate([
+        { $match: { status: 'rejected' } },
+        {
+          $group: {
+            _id: '$refund_status',
+            count: { $sum: 1 },
+            total: { $sum: { $ifNull: ['$totalPrice', '$price'] } },
+          },
+        },
+      ]),
+      // Orders paid but never acted on (no accept/reject)
+      Order.countDocuments({ status: 'paid' }),
+    ]);
+
+    const refundStats = { none: { count: 0, total: 0 }, processed: { count: 0, total: 0 }, failed: { count: 0, total: 0 } };
+    refundSummary.forEach((r) => {
+      if (refundStats[r._id]) {
+        refundStats[r._id] = { count: r.count, total: r.total };
+      }
+    });
+
+    res.json({
+      shopSettlements,
+      refundStats,
+      pendingOrdersCount: pendingOrders,
+    });
+  } catch (error) {
+    console.error('Get settlements error:', error);
+    res.status(500).json({ error: 'Failed to fetch settlements' });
+  }
+};
+
+// Orders that are paid but not accepted/rejected (need attention)
+export const getPendingPayments = async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const filter = { status: 'paid' };
+
+    const [orders, total] = await Promise.all([
+      Order.find(filter)
+        .populate('userId', 'username phone')
+        .populate('shopId', 'name slug')
+        .sort({ createdAt: 1 }) // oldest first
+        .skip(skip)
+        .limit(parseInt(limit))
+        .lean(),
+      Order.countDocuments(filter),
+    ]);
+
+    res.json({ orders, total, page: parseInt(page), limit: parseInt(limit) });
+  } catch (error) {
+    console.error('Get pending payments error:', error);
+    res.status(500).json({ error: 'Failed to fetch pending payments' });
+  }
+};
+
+// Orders where refund failed
+export const getFailedRefunds = async (req, res) => {
+  try {
+    const orders = await Order.find({ status: 'rejected', refund_status: 'failed' })
+      .populate('userId', 'username phone')
+      .populate('shopId', 'name slug')
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    res.json({ orders });
+  } catch (error) {
+    console.error('Get failed refunds error:', error);
+    res.status(500).json({ error: 'Failed to fetch failed refunds' });
+  }
+};
+
+// Admin can manually trigger refund for a paid order (or retry failed refund)
+export const processOrderRefund = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (!order.razorpay_payment_id) {
+      return res.status(400).json({ error: 'No payment ID found for this order' });
+    }
+
+    if (order.refund_status === 'processed') {
+      return res.status(400).json({ error: 'Refund already processed' });
+    }
+
+    const amount = order.totalPrice || order.price;
+
+    const refund = await processRefund({
+      paymentId: order.razorpay_payment_id,
+      amount,
+    });
+
+    order.refund_status = 'processed';
+    order.razorpay_refund_id = refund.refundId;
+    if (order.status === 'paid') {
+      order.status = 'rejected';
+    }
+    await order.save();
+
+    res.json({
+      message: 'Refund processed successfully',
+      refundId: refund.refundId,
+      amount,
+    });
+  } catch (error) {
+    console.error('Process refund error:', error);
+    res.status(500).json({ error: error.message || 'Refund failed' });
   }
 };

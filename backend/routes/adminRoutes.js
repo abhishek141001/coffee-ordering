@@ -12,6 +12,10 @@ import {
   deleteUser,
   getOrders,
   getOrder,
+  getSettlements,
+  getPendingPayments,
+  getFailedRefunds,
+  processOrderRefund,
 } from '../controllers/adminController.js';
 
 const router = Router();
@@ -36,5 +40,11 @@ router.delete('/users/:id', deleteUser);
 // Orders
 router.get('/orders', getOrders);
 router.get('/orders/:id', getOrder);
+
+// Settlements & Refunds
+router.get('/settlements', getSettlements);
+router.get('/payments/pending', getPendingPayments);
+router.get('/payments/failed-refunds', getFailedRefunds);
+router.post('/orders/:id/refund', processOrderRefund);
 
 export default router;
