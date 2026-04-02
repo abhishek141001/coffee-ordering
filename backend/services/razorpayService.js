@@ -17,7 +17,7 @@ export const createPaymentLink = async ({ amount, orderId, description, customer
       customer: {
         name: customerName || 'Customer',
       },
-      callback_url: `http://localhost:${env.port}/webhook/razorpay/callback`,
+      callback_url: `${env.baseUrl}/webhook/razorpay/callback`,
       callback_method: 'get',
     });
 

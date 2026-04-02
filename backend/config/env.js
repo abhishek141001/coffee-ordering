@@ -9,6 +9,7 @@ const env = {
   razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET,
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
   telegramChatId: process.env.TELEGRAM_CHAT_ID,
+  baseUrl: process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`,
   dashboardUrl: process.env.DASHBOARD_URL || 'http://localhost:3000',
 };
 
