@@ -2,7 +2,7 @@ import Shop from '../models/Shop.js';
 
 export const getNearbyShops = async (req, res) => {
   try {
-    const { lat, lng, radius = 200 } = req.query;
+    const { lat, lng, radius = 5000 } = req.query;
 
     if (!lat || !lng) {
       return res.status(400).json({ error: 'lat and lng query params are required' });

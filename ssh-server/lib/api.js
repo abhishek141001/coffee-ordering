@@ -25,7 +25,7 @@ export async function login(username) {
   return request('POST', '/auth/login', { username });
 }
 
-export async function fetchNearbyShops(lat, lng, radius = 200) {
+export async function fetchNearbyShops(lat, lng, radius = 5000) {
   return request('GET', `/shops/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
 }
 
