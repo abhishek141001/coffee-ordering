@@ -1,27 +1,27 @@
 #!/bin/bash
 
-# Initial SSL certificate provisioning for ordercoffee.online
+# Initial SSL certificate provisioning for caffeineoperator.online
 # Run this once on first deployment
 
 set -e
 
-DOMAINS=(ordercoffee.online www.ordercoffee.online)
+DOMAINS=(caffeineoperator.online www.caffeineoperator.online)
 EMAIL="" # Add your email for Let's Encrypt notifications
 DATA_PATH="./certbot"
 RSA_KEY_SIZE=4096
 
 # Check if certificates already exist
-if [ -d "/var/lib/docker/volumes/$(basename $(pwd))_certbot_conf/_data/live/ordercoffee.online" ]; then
+if [ -d "/var/lib/docker/volumes/$(basename $(pwd))_certbot_conf/_data/live/caffeineoperator.online" ]; then
   echo "Certificates already exist. Skipping initialization."
   exit 0
 fi
 
 echo "### Creating dummy certificate for ${DOMAINS[0]} ..."
-mkdir -p "$DATA_PATH/conf/live/ordercoffee.online"
+mkdir -p "$DATA_PATH/conf/live/caffeineoperator.online"
 docker compose run --rm --entrypoint "\
   openssl req -x509 -nodes -newkey rsa:$RSA_KEY_SIZE -days 1 \
-    -keyout '/etc/letsencrypt/live/ordercoffee.online/privkey.pem' \
-    -out '/etc/letsencrypt/live/ordercoffee.online/fullchain.pem' \
+    -keyout '/etc/letsencrypt/live/caffeineoperator.online/privkey.pem' \
+    -out '/etc/letsencrypt/live/caffeineoperator.online/fullchain.pem' \
     -subj '/CN=localhost'" certbot
 
 echo "### Starting nginx ..."
@@ -29,9 +29,9 @@ docker compose up --force-recreate -d nginx
 
 echo "### Deleting dummy certificate ..."
 docker compose run --rm --entrypoint "\
-  rm -rf /etc/letsencrypt/live/ordercoffee.online && \
-  rm -rf /etc/letsencrypt/archive/ordercoffee.online && \
-  rm -rf /etc/letsencrypt/renewal/ordercoffee.online.conf" certbot
+  rm -rf /etc/letsencrypt/live/caffeineoperator.online && \
+  rm -rf /etc/letsencrypt/archive/caffeineoperator.online && \
+  rm -rf /etc/letsencrypt/renewal/caffeineoperator.online.conf" certbot
 
 echo "### Requesting Let's Encrypt certificate for ${DOMAINS[*]} ..."
 

@@ -25,7 +25,7 @@ services:
       RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
-      DASHBOARD_URL: https://ordercoffee.online/dashboard
+      DASHBOARD_URL: https://caffeineoperator.online/dashboard
 
   web:
     build: ./web
