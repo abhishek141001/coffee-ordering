@@ -41,7 +41,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "22:2222"
+      - "2222:2222"
     environment:
       API_URL: http://backend:5000
       SSH_PORT: 2222
