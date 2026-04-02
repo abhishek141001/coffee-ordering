@@ -9,25 +9,26 @@ interface TerminalStep {
 }
 
 const STEPS: TerminalStep[] = [
-  { type: "type", text: "$ ssh coffee@terminalcoffee.dev", className: "text-white", delay: 35 },
+  { type: "type", text: "$ ssh caffeineoperator.online -p 2222", className: "text-white", delay: 35 },
   { type: "pause", delay: 800 },
-  { type: "instant", text: "Connected to Terminal Coffee v1.0", className: "text-slate-500 text-xs", delay: 0 },
+  { type: "instant", text: "Connected to CaffeineOperator v2.0", className: "text-zinc-500 text-xs", delay: 0 },
+  { type: "instant", text: "\u26a1 Welcome back, operator. +10 XP (login streak: 7)", className: "text-amber-400 text-xs", delay: 0 },
   { type: "pause", delay: 600 },
-  { type: "instant", text: "\u2502 Shops near you:", className: "text-cyan-400/80 text-xs", delay: 0 },
+  { type: "instant", text: "\u2502 Shops near you:", className: "text-orange-400/80 text-xs", delay: 0 },
   { type: "pause", delay: 200 },
   { type: "instant", text: "  \u2713 Brew & Code \u2014 50m away", className: "text-white", delay: 0 },
   { type: "pause", delay: 200 },
-  { type: "instant", text: "  \u25CB The Daily Grind \u2014 120m", className: "text-slate-400", delay: 0 },
+  { type: "instant", text: "  \u25CB The Daily Grind \u2014 120m", className: "text-zinc-400", delay: 0 },
   { type: "pause", delay: 800 },
-  { type: "instant", text: "\u2502 Select your drink:", className: "text-cyan-400/80 text-xs", delay: 0 },
+  { type: "instant", text: "\u2502 Select your drink:", className: "text-orange-400/80 text-xs", delay: 0 },
   { type: "pause", delay: 300 },
-  { type: "instant", text: "  \u25B8 Cappuccino (L)  \u20B9180", className: "text-cyan-300 bg-cyan-400/10 rounded px-1 -mx-1", delay: 0 },
-  { type: "instant", text: "    Espresso        \u20B9120", className: "text-slate-500", delay: 0 },
-  { type: "instant", text: "    Pour Over       \u20B9200", className: "text-slate-500", delay: 0 },
+  { type: "instant", text: "  \u25B8 Cappuccino (L)  \u20B9180", className: "text-amber-300 bg-amber-400/10 rounded px-1 -mx-1", delay: 0 },
+  { type: "instant", text: "    Espresso        \u20B9120", className: "text-zinc-500", delay: 0 },
+  { type: "instant", text: "    Pour Over       \u20B9200", className: "text-zinc-500", delay: 0 },
   { type: "pause", delay: 1000 },
   { type: "instant", text: "\u2713 Payment complete. Order #42 confirmed!", className: "text-green-400 font-medium", delay: 0 },
   { type: "pause", delay: 300 },
-  { type: "instant", text: "Ready in ~4 min. Skip the line \u2615", className: "text-slate-500 text-xs", delay: 0 },
+  { type: "instant", text: "\u26a1 +50 XP earned! Rank: Espresso Elite \u2615", className: "text-amber-400 text-xs font-medium", delay: 0 },
 ];
 
 export default function TypingTerminal() {
@@ -76,14 +77,13 @@ export default function TypingTerminal() {
           await sleep(150);
           setLines((prev) => [
             ...prev,
-            { text: step.text!, className: step.className || "text-slate-300" },
+            { text: step.text!, className: step.className || "text-zinc-300" },
           ]);
         } else if (step.type === "pause") {
           await sleep(step.delay);
         }
       }
 
-      // Show final cursor blinking, then wait before restart
       await sleep(4000);
     }
   }, [typeText, sleep]);
@@ -103,8 +103,8 @@ export default function TypingTerminal() {
         <div className="terminal-dot bg-[#ff5f57]" />
         <div className="terminal-dot bg-[#febc2e]" />
         <div className="terminal-dot bg-[#28c840]" />
-        <span className="text-xs text-slate-500 ml-2 font-mono">
-          ~/workspace
+        <span className="text-xs text-zinc-500 ml-2 font-mono">
+          ~/ops
         </span>
       </div>
       <div className="p-4 md:p-5 font-mono text-xs md:text-sm leading-relaxed min-h-[280px] md:min-h-[320px]">
@@ -118,7 +118,7 @@ export default function TypingTerminal() {
             <div className={currentClassName || "text-white"}>
               {currentTyping}
               {showCursor && (
-                <span className="inline-block w-[7px] h-[14px] bg-cyan-400 ml-[1px] animate-blink align-middle" />
+                <span className="inline-block w-[7px] h-[14px] bg-amber-400 ml-[1px] animate-blink align-middle" />
               )}
             </div>
           )}

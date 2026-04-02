@@ -17,8 +17,9 @@ export default function LandingPage() {
 
       {/* Ambient background glow */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-500/[0.04] rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-cyan-400/[0.03] rounded-full blur-[120px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-amber-500/[0.04] rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-orange-400/[0.03] rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] right-[20%] w-[300px] h-[300px] bg-red-500/[0.02] rounded-full blur-[100px]" />
       </div>
 
       <Navbar />

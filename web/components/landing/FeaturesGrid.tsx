@@ -7,37 +7,43 @@ const FEATURES = [
     icon: <span>&#62;&#95;</span>,
     title: "Zero install via SSH",
     description:
-      "No npm, no brew, no app store. Just ssh in from any machine and order. Works on any OS with a terminal.",
+      "No npm, no brew, no app store. Just SSH in from any machine and order. Works on any OS with a terminal.",
+    badge: "CORE",
   },
   {
-    icon: <span>&#128205;</span>,
-    title: "Auto-detects nearby shops",
+    icon: <span>&#127942;</span>,
+    title: "XP & leaderboard",
     description:
-      "GPS-based discovery finds coffee shops within 200 meters. Walk to the closest one, skip the queue.",
+      "Earn XP with every order. Climb from Caffeine Rookie to Espresso Elite. Flex your rank in the terminal.",
+    badge: "GAMIFIED",
   },
   {
     icon: <span>&#128274;</span>,
     title: "Secure payments",
     description:
       "Razorpay handles the money. Your card details never touch our servers. PCI compliant out of the box.",
+    badge: "SECURE",
   },
   {
     icon: <span>&#9889;</span>,
     title: "Instant shop notifications",
     description:
       "Shops get a Telegram ping the moment you pay. They accept with one tap. No delays, no missed orders.",
+    badge: "FAST",
   },
   {
     icon: <span>&#123;&#125;</span>,
     title: "JSON output mode",
     description:
-      "Pass --json to any command. Pipe to jq, feed into scripts, build your own coffee dashboard.",
+      "Pass --json to any command. Pipe to jq, feed into scripts, build your own caffeine dashboard.",
+    badge: "DEV",
   },
   {
-    icon: <span>&#128197;</span>,
-    title: "Order history & status",
+    icon: <span>&#128293;</span>,
+    title: "Order streaks",
     description:
-      "Track every order. Check status in real-time. Never wonder if your coffee is being made.",
+      "Keep your daily streak alive. 7-day streaks unlock bonus XP. Miss a day? Back to zero, operator.",
+    badge: "NEW",
   },
 ];
 
@@ -53,10 +59,10 @@ export default function FeaturesGrid() {
           }`}
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Built for people who{" "}
-            <span className="text-cyan-400">ship code</span>
+            Built for{" "}
+            <span className="text-amber-400">operators</span>
           </h2>
-          <p className="text-slate-400 text-lg max-w-xl mx-auto">
+          <p className="text-zinc-400 text-lg max-w-xl mx-auto">
             We know you hate context-switching. So we brought coffee to where
             you already are.
           </p>
@@ -79,6 +85,7 @@ export default function FeaturesGrid() {
                 icon={feature.icon}
                 title={feature.title}
                 description={feature.description}
+                badge={feature.badge}
               />
             </div>
           ))}

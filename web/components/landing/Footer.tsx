@@ -2,16 +2,16 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-slate-700/50 px-6 py-10">
+    <footer className="relative border-t border-zinc-800/50 px-6 py-10">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
             <span className="text-xl">&#9749;</span>
             <span className="font-bold">
-              Terminal<span className="text-cyan-400">Coffee</span>
+              Caffeine<span className="text-amber-400">Operator</span>
             </span>
           </div>
-          <div className="flex gap-6 text-sm text-slate-500">
+          <div className="flex gap-6 text-sm text-zinc-500">
             <a
               href="#how-it-works"
               className="hover:text-white transition-colors"
@@ -31,8 +31,8 @@ export default function Footer() {
               For Shops
             </Link>
           </div>
-          <div className="text-sm text-slate-500">
-            Built for devs, by devs.
+          <div className="text-sm text-zinc-500">
+            Built for operators, by operators.
           </div>
         </div>
       </div>

@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Terminal Coffee - Order coffee from your terminal",
+  title: "CaffeineOperator - Order coffee from your terminal",
   description:
-    "A developer-first coffee ordering platform. SSH in, browse nearby shops, order and pay — all from your terminal.",
+    "A developer-first coffee ordering platform. SSH in, browse nearby shops, order and pay — all from your terminal. Level up your caffeine game.",
 };
 
 export default function RootLayout({
@@ -28,7 +28,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#060b18] text-white">
+      <body className="min-h-full flex flex-col bg-[#0a0a0f] text-white">
         {children}
       </body>
     </html>

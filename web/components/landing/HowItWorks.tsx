@@ -6,6 +6,7 @@ function StepItem({
   title,
   description,
   code,
+  xp,
   isLast = false,
   isVisible,
   delay,
@@ -14,6 +15,7 @@ function StepItem({
   title: string;
   description: string;
   code?: string;
+  xp?: string;
   isLast?: boolean;
   isVisible: boolean;
   delay: string;
@@ -25,22 +27,29 @@ function StepItem({
       }`}
     >
       <div className="flex flex-col items-center">
-        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center font-bold text-lg text-black shadow-lg shadow-cyan-400/20">
+        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center font-bold text-lg text-black shadow-lg shadow-amber-500/20">
           {number}
         </div>
         {!isLast && (
           <div
-            className={`w-px bg-gradient-to-b from-cyan-400/40 to-transparent mt-2 transition-all duration-1000 ${delay} ${
+            className={`w-px bg-gradient-to-b from-amber-400/40 to-transparent mt-2 transition-all duration-1000 ${delay} ${
               isVisible ? "h-full" : "h-0"
             }`}
           />
         )}
       </div>
       <div className="pb-10">
-        <h3 className="font-semibold text-xl text-white mb-1">{title}</h3>
-        <p className="text-slate-400 text-sm mb-3">{description}</p>
+        <div className="flex items-center gap-3 mb-1">
+          <h3 className="font-semibold text-xl text-white">{title}</h3>
+          {xp && (
+            <span className="text-xs font-mono text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full">
+              {xp}
+            </span>
+          )}
+        </div>
+        <p className="text-zinc-400 text-sm mb-3">{description}</p>
         {code && (
-          <code className="inline-block bg-[#081422] border border-slate-700 rounded-lg px-4 py-2 text-green-400 text-sm font-mono">
+          <code className="inline-block bg-[#111118] border border-zinc-800 rounded-lg px-4 py-2 text-green-400 text-sm font-mono">
             {code}
           </code>
         )}
@@ -62,9 +71,9 @@ export default function HowItWorks() {
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Three steps to{" "}
-            <span className="text-cyan-400">fresh coffee</span>
+            <span className="text-amber-400">level up</span>
           </h2>
-          <p className="text-slate-400 text-lg max-w-xl mx-auto">
+          <p className="text-zinc-400 text-lg max-w-xl mx-auto">
             No sign-ups, no downloads, no friction. Just SSH and sip.
           </p>
         </div>
@@ -72,23 +81,26 @@ export default function HowItWorks() {
         <div className="space-y-0">
           <StepItem
             number={1}
-            title="Open your terminal"
-            description="SSH in from any machine. macOS, Linux, WSL &mdash; if it has a terminal, you're good."
-            code="ssh coffee@terminalcoffee.dev"
+            title="Connect to HQ"
+            description="SSH in from any machine. macOS, Linux, WSL &mdash; if it has a terminal, you're in."
+            code="ssh caffeineoperator.online -p 2222"
+            xp="+10 XP"
             isVisible={isInView}
             delay="delay-100"
           />
           <StepItem
             number={2}
-            title="Pick your drink"
+            title="Choose your loadout"
             description="We auto-detect nearby shops and show their full menu. Navigate with arrow keys, hit enter."
+            xp="+20 XP"
             isVisible={isInView}
             delay="delay-300"
           />
           <StepItem
             number={3}
-            title="Pay & pick up"
+            title="Deploy & pick up"
             description="Secure payment via Razorpay. The shop gets a Telegram ping. Walk over, grab your coffee."
+            xp="+50 XP"
             isLast
             isVisible={isInView}
             delay="delay-500"
