@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
 import AdminSession from '../models/AdminSession.js';
 import env from '../config/env.js';
 
@@ -11,7 +10,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    if (!env.adminEmail || !env.adminPasswordHash) {
+    if (!env.adminEmail || !env.adminPassword) {
       return res.status(503).json({ error: 'Admin login is not configured' });
     }
 
@@ -19,8 +18,7 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const valid = await bcrypt.compare(password, env.adminPasswordHash);
-    if (!valid) {
+    if (password !== env.adminPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
