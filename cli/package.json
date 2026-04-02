@@ -1,0 +1,16 @@
+{
+  "name": "coffee-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Terminal Coffee Ordering CLI",
+  "main": "index.js",
+  "bin": {
+    "coffee": "./index.js"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "inquirer": "^12.3.2",
+    "ora": "^8.1.1"
+  }
+}

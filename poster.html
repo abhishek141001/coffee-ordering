@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal Coffee — Order Coffee From Your Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    overflow: hidden;
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'VT323', monospace;
+    position: relative;
+  }
+
+  .poster {
+    width: 210mm;
+    height: 297mm;
+    background: #0a0a0a;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12mm 14mm 10mm;
+  }
+
+  /* Scanline overlay */
+  .poster::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.08) 2px,
+      rgba(0, 0, 0, 0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Grid background */
+  .poster::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(0, 255, 100, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 100, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .content {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+  }
+
+  /* ─── PIXEL ART COFFEE CUP ─── */
+  .coffee-cup {
+    display: grid;
+    grid-template-columns: repeat(12, 5px);
+    grid-template-rows: repeat(10, 5px);
+    gap: 1px;
+    margin-bottom: 6mm;
+  }
+
+  .coffee-cup .p {
+    width: 5px;
+    height: 5px;
+  }
+
+  .coffee-cup .s { background: #aaa; } /* steam */
+  .coffee-cup .c { background: #8B4513; } /* coffee */
+  .coffee-cup .w { background: #f5f5f5; } /* cup white */
+  .coffee-cup .h { background: #d4d4d4; } /* handle */
+  .coffee-cup .b { background: #c0c0c0; } /* saucer */
+
+  /* ─── HEADER ─── */
+  .header {
+    text-align: center;
+    margin-bottom: 5mm;
+  }
+
+  .pixel-art-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5mm;
+    margin-bottom: 4mm;
+  }
+
+  .title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 22pt;
+    color: #00ff66;
+    text-shadow:
+      0 0 10px rgba(0, 255, 102, 0.5),
+      0 0 30px rgba(0, 255, 102, 0.2),
+      3px 3px 0 #003311;
+    letter-spacing: 1px;
+    line-height: 1.4;
+  }
+
+  .title .coffee-word {
+    color: #ff9f43;
+    text-shadow:
+      0 0 10px rgba(255, 159, 67, 0.5),
+      0 0 30px rgba(255, 159, 67, 0.2),
+      3px 3px 0 #331a00;
+  }
+
+  .subtitle {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7pt;
+    color: #666;
+    letter-spacing: 2px;
+    margin-top: 2mm;
+  }
+
+  /* ─── DECORATIVE DIVIDER ─── */
+  .divider {
+    width: 100%;
+    text-align: center;
+    font-family: 'VT323', monospace;
+    font-size: 14pt;
+    color: #333;
+    letter-spacing: 4px;
+    margin: 3mm 0;
+  }
+
+  /* ─── HOOK LINE ─── */
+  .hook {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8.5pt;
+    color: #ff6b6b;
+    text-align: center;
+    margin-bottom: 5mm;
+    line-height: 1.8;
+    text-shadow: 2px 2px 0 #1a0000;
+  }
+
+  /* ─── TERMINAL WINDOW ─── */
+  .terminal {
+    background: #1a1a2e;
+    border: 2px solid #333;
+    border-radius: 6px;
+    width: 100%;
+    margin-bottom: 5mm;
+    box-shadow:
+      0 4px 20px rgba(0, 0, 0, 0.5),
+      inset 0 0 40px rgba(0, 255, 102, 0.02);
+  }
+
+  .terminal-bar {
+    background: #2a2a3e;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-bottom: 1px solid #333;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .terminal-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .terminal-dot.red { background: #ff5f57; }
+  .terminal-dot.yellow { background: #febc2e; }
+  .terminal-dot.green { background: #28c840; }
+
+  .terminal-title {
+    font-family: 'VT323', monospace;
+    font-size: 11pt;
+    color: #666;
+    margin-left: 8px;
+  }
+
+  .terminal-body {
+    padding: 5mm 4mm;
+    font-family: 'VT323', monospace;
+    font-size: 15pt;
+    line-height: 1.5;
+  }
+
+  .terminal-body .prompt {
+    color: #00ff66;
+  }
+
+  .terminal-body .command {
+    color: #e0e0e0;
+  }
+
+  .terminal-body .output {
+    color: #888;
+  }
+
+  .terminal-body .highlight {
+    color: #ff9f43;
+  }
+
+  .terminal-body .success {
+    color: #00ff66;
+  }
+
+  .terminal-body .blink {
+    color: #00ff66;
+    animation: blink 1s infinite;
+  }
+
+  @keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  .terminal-line {
+    margin-bottom: 1px;
+  }
+
+  /* ─── FEATURES ─── */
+  .features {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 4mm;
+    margin-bottom: 5mm;
+  }
+
+  .feature {
+    flex: 1;
+    text-align: center;
+    padding: 3mm;
+    background: rgba(0, 255, 102, 0.03);
+    border: 1px solid #1a3320;
+    border-radius: 4px;
+  }
+
+  .feature-icon {
+    font-size: 28pt;
+    margin-bottom: 2mm;
+    display: block;
+  }
+
+  .feature-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 5.5pt;
+    color: #00ff66;
+    margin-bottom: 1.5mm;
+    line-height: 1.5;
+  }
+
+  .feature-desc {
+    font-family: 'VT323', monospace;
+    font-size: 12pt;
+    color: #888;
+    line-height: 1.3;
+  }
+
+  /* ─── CTA SECTION ─── */
+  .cta {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 4mm;
+  }
+
+  .cta-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7pt;
+    color: #666;
+    margin-bottom: 3mm;
+    letter-spacing: 3px;
+  }
+
+  .ssh-box {
+    background: #0d1117;
+    border: 3px solid #00ff66;
+    border-radius: 6px;
+    padding: 5mm 6mm;
+    display: inline-block;
+    margin-bottom: 4mm;
+    box-shadow:
+      0 0 15px rgba(0, 255, 102, 0.2),
+      0 0 40px rgba(0, 255, 102, 0.05);
+    width: 100%;
+  }
+
+  .ssh-command {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14pt;
+    color: #00ff66;
+    text-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
+    letter-spacing: 1px;
+  }
+
+  .ssh-command .dollar {
+    color: #ff9f43;
+    margin-right: 4px;
+  }
+
+  .ssh-hint {
+    font-family: 'VT323', monospace;
+    font-size: 13pt;
+    color: #555;
+    margin-top: 2mm;
+  }
+
+  /* ─── BOTTOM SECTION: QR + URL ─── */
+  .bottom-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6mm;
+    margin-top: auto;
+    padding-top: 3mm;
+  }
+
+  .qr-container {
+    text-align: center;
+  }
+
+  .qr-placeholder {
+    width: 28mm;
+    height: 28mm;
+    background: white;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2mm;
+  }
+
+  /* Pixel-art style QR placeholder */
+  .qr-grid {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(21, 1fr);
+    grid-template-rows: repeat(21, 1fr);
+    gap: 0;
+  }
+
+  .qr-grid .b { background: #000; }
+  .qr-grid .w { background: #fff; }
+
+  .qr-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 5pt;
+    color: #555;
+    margin-top: 1.5mm;
+  }
+
+  .bottom-info {
+    text-align: center;
+  }
+
+  .website-url {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10pt;
+    color: #ff9f43;
+    text-shadow: 0 0 8px rgba(255, 159, 67, 0.3);
+    margin-bottom: 2mm;
+  }
+
+  .bottom-tagline {
+    font-family: 'VT323', monospace;
+    font-size: 14pt;
+    color: #555;
+    line-height: 1.4;
+  }
+
+  .bottom-tagline .accent {
+    color: #00ff66;
+  }
+
+  /* ─── CORNER DECORATIONS ─── */
+  .corner {
+    position: absolute;
+    z-index: 5;
+    font-family: 'VT323', monospace;
+    font-size: 10pt;
+    color: #1a3320;
+  }
+
+  .corner.tl { top: 5mm; left: 6mm; }
+  .corner.tr { top: 5mm; right: 6mm; }
+  .corner.bl { bottom: 5mm; left: 6mm; }
+  .corner.br { bottom: 5mm; right: 6mm; }
+
+  /* ─── STARS / DECORATION ─── */
+  .stars {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  /* ─── PRINT STYLES ─── */
+  @media print {
+    html, body {
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .poster {
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+
+    .blink {
+      animation: none;
+      opacity: 1;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="poster">
+  <!-- Corner decorations -->
+  <div class="corner tl">+ 01</div>
+  <div class="corner tr">02 +</div>
+  <div class="corner bl">+ 03</div>
+  <div class="corner br">04 +</div>
+
+  <!-- Scattered pixel stars -->
+  <div class="stars">
+    <div class="star" style="top:8%;left:12%"></div>
+    <div class="star" style="top:15%;left:85%"></div>
+    <div class="star" style="top:25%;left:8%"></div>
+    <div class="star" style="top:35%;left:92%"></div>
+    <div class="star" style="top:55%;left:5%"></div>
+    <div class="star" style="top:65%;left:88%"></div>
+    <div class="star" style="top:75%;left:15%"></div>
+    <div class="star" style="top:82%;left:78%"></div>
+    <div class="star" style="top:45%;left:3%"></div>
+    <div class="star" style="top:20%;left:50%"></div>
+    <div class="star" style="top:90%;left:45%"></div>
+    <div class="star" style="top:12%;left:35%"></div>
+    <div class="star" style="top:70%;left:60%"></div>
+    <div class="star" style="top:50%;left:95%"></div>
+  </div>
+
+  <div class="content">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="title">TERMINAL<br><span class="coffee-word">COFFEE</span></div>
+      <div class="subtitle">// ORDER COFFEE LIKE A DEV</div>
+    </div>
+
+    <div class="divider">=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</div>
+
+    <!-- HOOK -->
+    <div class="hook">
+      WHY WAIT IN LINE WHEN YOU<br>CAN ORDER FROM YOUR TERMINAL?
+    </div>
+
+    <!-- TERMINAL WINDOW -->
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+        <span class="terminal-title">~/.terminal-coffee</span>
+      </div>
+      <div class="terminal-body">
+        <div class="terminal-line"><span class="prompt">$</span> <span class="command">ssh terminal.coffee</span></div>
+        <div class="terminal-line"><span class="output">Connecting to Terminal Coffee...</span></div>
+        <div class="terminal-line"><span class="success">&#10004;</span> <span class="output">Welcome back, dev!</span></div>
+        <div class="terminal-line"><span class="output">&nbsp;</span></div>
+        <div class="terminal-line"><span class="highlight">&gt; Cappuccino &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8377;180</span></div>
+        <div class="terminal-line"><span class="highlight">&gt; Cold Brew &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8377;200</span></div>
+        <div class="terminal-line"><span class="highlight">&gt; Espresso &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8377;150</span></div>
+        <div class="terminal-line"><span class="output">&nbsp;</span></div>
+        <div class="terminal-line"><span class="prompt">[Enter]</span> <span class="command">Select &nbsp; </span><span class="prompt">[q]</span> <span class="command">Quit</span></div>
+        <div class="terminal-line"><span class="output">&nbsp;</span></div>
+        <div class="terminal-line"><span class="success">&#10004; Order placed! Pick up in 3 mins</span></div>
+        <div class="terminal-line"><span class="blink">_</span></div>
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="features">
+      <div class="feature">
+        <span class="feature-icon">&#9000;</span>
+        <div class="feature-title">ZERO<br>INSTALL</div>
+        <div class="feature-desc">Just SSH from<br>any terminal</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">&#9889;</span>
+        <div class="feature-title">30 SEC<br>ORDER</div>
+        <div class="feature-desc">Pick menu, pay<br>skip the line</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">&#9749;</span>
+        <div class="feature-title">WALK &amp;<br>GRAB</div>
+        <div class="feature-desc">Ready when<br>you arrive</div>
+      </div>
+    </div>
+
+    <div class="divider">=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</div>
+
+    <!-- CTA -->
+    <div class="cta">
+      <div class="cta-label">TRY IT NOW</div>
+      <div class="ssh-box">
+        <div class="ssh-command"><span class="dollar">$</span> ssh terminal.coffee</div>
+        <div class="ssh-hint">Works from any machine. No signup needed.</div>
+      </div>
+    </div>
+
+    <!-- BOTTOM: QR + URL -->
+    <div class="bottom-section">
+      <div class="qr-container">
+        <div class="qr-placeholder">
+          <!-- Stylized QR-like pattern — replace with real QR code image -->
+          <svg viewBox="0 0 210 210" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+            <!-- QR Finder patterns (top-left, top-right, bottom-left) -->
+            <!-- Top-left finder -->
+            <rect x="0" y="0" width="70" height="70" fill="#000"/>
+            <rect x="10" y="10" width="50" height="50" fill="#fff"/>
+            <rect x="20" y="20" width="30" height="30" fill="#000"/>
+            <!-- Top-right finder -->
+            <rect x="140" y="0" width="70" height="70" fill="#000"/>
+            <rect x="150" y="10" width="50" height="50" fill="#fff"/>
+            <rect x="160" y="20" width="30" height="30" fill="#000"/>
+            <!-- Bottom-left finder -->
+            <rect x="0" y="140" width="70" height="70" fill="#000"/>
+            <rect x="10" y="150" width="50" height="50" fill="#fff"/>
+            <rect x="20" y="160" width="30" height="30" fill="#000"/>
+            <!-- Data area — decorative pixel blocks -->
+            <rect x="80" y="0" width="10" height="10" fill="#000"/>
+            <rect x="100" y="0" width="10" height="10" fill="#000"/>
+            <rect x="120" y="0" width="10" height="10" fill="#000"/>
+            <rect x="80" y="20" width="10" height="10" fill="#000"/>
+            <rect x="110" y="20" width="10" height="10" fill="#000"/>
+            <rect x="80" y="40" width="10" height="10" fill="#000"/>
+            <rect x="100" y="40" width="10" height="10" fill="#000"/>
+            <rect x="120" y="40" width="10" height="10" fill="#000"/>
+            <rect x="80" y="60" width="10" height="10" fill="#000"/>
+            <rect x="110" y="60" width="10" height="10" fill="#000"/>
+            <!-- Middle row -->
+            <rect x="0" y="80" width="10" height="10" fill="#000"/>
+            <rect x="20" y="80" width="10" height="10" fill="#000"/>
+            <rect x="40" y="80" width="10" height="10" fill="#000"/>
+            <rect x="60" y="80" width="10" height="10" fill="#000"/>
+            <rect x="80" y="80" width="10" height="10" fill="#000"/>
+            <rect x="100" y="80" width="10" height="10" fill="#000"/>
+            <rect x="120" y="80" width="10" height="10" fill="#000"/>
+            <rect x="140" y="80" width="10" height="10" fill="#000"/>
+            <rect x="160" y="80" width="10" height="10" fill="#000"/>
+            <rect x="180" y="80" width="10" height="10" fill="#000"/>
+            <rect x="200" y="80" width="10" height="10" fill="#000"/>
+            <rect x="0" y="100" width="10" height="10" fill="#000"/>
+            <rect x="30" y="100" width="10" height="10" fill="#000"/>
+            <rect x="50" y="100" width="10" height="10" fill="#000"/>
+            <rect x="80" y="100" width="10" height="10" fill="#000"/>
+            <rect x="110" y="100" width="10" height="10" fill="#000"/>
+            <rect x="140" y="100" width="10" height="10" fill="#000"/>
+            <rect x="170" y="100" width="10" height="10" fill="#000"/>
+            <rect x="200" y="100" width="10" height="10" fill="#000"/>
+            <rect x="0" y="120" width="10" height="10" fill="#000"/>
+            <rect x="20" y="120" width="10" height="10" fill="#000"/>
+            <rect x="50" y="120" width="10" height="10" fill="#000"/>
+            <rect x="60" y="120" width="10" height="10" fill="#000"/>
+            <rect x="90" y="120" width="10" height="10" fill="#000"/>
+            <rect x="120" y="120" width="10" height="10" fill="#000"/>
+            <rect x="150" y="120" width="10" height="10" fill="#000"/>
+            <rect x="180" y="120" width="10" height="10" fill="#000"/>
+            <!-- Right side data -->
+            <rect x="150" y="140" width="10" height="10" fill="#000"/>
+            <rect x="170" y="140" width="10" height="10" fill="#000"/>
+            <rect x="200" y="140" width="10" height="10" fill="#000"/>
+            <rect x="140" y="160" width="10" height="10" fill="#000"/>
+            <rect x="160" y="160" width="10" height="10" fill="#000"/>
+            <rect x="190" y="160" width="10" height="10" fill="#000"/>
+            <rect x="150" y="180" width="10" height="10" fill="#000"/>
+            <rect x="180" y="180" width="10" height="10" fill="#000"/>
+            <rect x="200" y="180" width="10" height="10" fill="#000"/>
+            <rect x="140" y="200" width="10" height="10" fill="#000"/>
+            <rect x="170" y="200" width="10" height="10" fill="#000"/>
+            <rect x="190" y="200" width="10" height="10" fill="#000"/>
+            <!-- Bottom data -->
+            <rect x="80" y="140" width="10" height="10" fill="#000"/>
+            <rect x="100" y="150" width="10" height="10" fill="#000"/>
+            <rect x="120" y="140" width="10" height="10" fill="#000"/>
+            <rect x="80" y="170" width="10" height="10" fill="#000"/>
+            <rect x="110" y="180" width="10" height="10" fill="#000"/>
+            <rect x="90" y="200" width="10" height="10" fill="#000"/>
+            <rect x="120" y="190" width="10" height="10" fill="#000"/>
+          </svg>
+        </div>
+        <div class="qr-label">SCAN ME</div>
+      </div>
+
+      <div class="bottom-info">
+        <div class="website-url">terminal.coffee</div>
+        <div class="bottom-tagline">
+          <span class="accent">Open source</span> coffee ordering<br>
+          for developers who live<br>
+          in the <span class="accent">terminal</span>.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

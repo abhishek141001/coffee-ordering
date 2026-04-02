@@ -1,0 +1,13 @@
+# Environment files
+.env
+.env.production
+.env.local
+
+# Dependencies
+node_modules
+
+# OS files
+.DS_Store
+
+# SSH host key
+ssh-server/host.key
