@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { setShopToken, setShopInfo } from "../../../lib/shopAuth";
+import { setAdminToken } from "../../../lib/adminAuth";
 import { apiCall } from "../../../lib/api";
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,14 +18,13 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const data = await apiCall<{
-        token: string;
-        shop: { id: string; name: string; slug: string };
-      }>("POST", "/shop-auth/login", { email, password });
-
-      setShopToken(data.token);
-      setShopInfo(data.shop);
-      router.push("/dashboard");
+      const data = await apiCall<{ token: string }>(
+        "POST",
+        "/admin-auth/login",
+        { email, password }
+      );
+      setAdminToken(data.token);
+      router.push("/admin");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -38,15 +36,15 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#060b18] px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-amber-500">Terminal Coffee</h1>
-          <p className="text-gray-400 mt-2">Shop Owner Dashboard</p>
+          <h1 className="text-2xl font-bold text-amber-500">Admin Panel</h1>
+          <p className="text-gray-400 mt-2">Terminal Coffee Administration</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
           className="bg-[#0a1628] border border-gray-800 rounded-xl p-8 space-y-6"
         >
-          <h2 className="text-xl font-semibold text-white">Sign in</h2>
+          <h2 className="text-xl font-semibold text-white">Admin Sign in</h2>
 
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
@@ -64,7 +62,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-4 py-3 bg-[#060b18] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition-colors"
-              placeholder="your@email.com"
+              placeholder="admin@example.com"
             />
           </div>
 
@@ -78,7 +76,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full px-4 py-3 bg-[#060b18] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition-colors"
-              placeholder="Enter your password"
+              placeholder="Enter admin password"
             />
           </div>
 
@@ -89,16 +87,6 @@ export default function LoginPage() {
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
-
-          <p className="text-center text-sm text-gray-500">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/dashboard/signup"
-              className="text-amber-500 hover:text-amber-400"
-            >
-              Sign up
-            </Link>
-          </p>
         </form>
       </div>
     </div>

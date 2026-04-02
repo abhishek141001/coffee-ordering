@@ -1,5 +1,5 @@
 import { CLEAR, BOLD, RESET, AMBER, BROWN, GREEN, RED, YELLOW, CYAN, GRAY, WHITE } from '../app.js';
-import { createOrder } from '../../lib/api.js';
+import { createOrder, requestLocationToken, getLocationStatus } from '../../lib/api.js';
 import { showStatus } from './status.js';
 import { showMenu } from './menu.js';
 
@@ -9,6 +9,8 @@ export function showOrderConfirm(stream, ctx) {
   const order = session.orderDetails;
   const shopName = order.shopName;
   const shopId = order.shopId;
+  let mode = 'confirm'; // 'confirm' | 'location_update'
+  let pollTimer = null;
 
   function cap(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
@@ -21,6 +23,14 @@ export function showOrderConfirm(stream, ctx) {
     stream.write(`  ${BROWN}──────────────────────────────${RESET}\r\n`);
     stream.write(`\r\n`);
     stream.write(`  ${BOLD}Shop:${RESET}   ${shopName}\r\n`);
+
+    // Show location
+    const locLabel = session.location?.city || session.location?.address || '';
+    if (locLabel) {
+      stream.write(`  ${BOLD}📍${RESET}      ${GRAY}${locLabel}${RESET}  ${GRAY}[u] update${RESET}\r\n`);
+    } else {
+      stream.write(`  ${BOLD}📍${RESET}      ${YELLOW}No location set${RESET}  ${GRAY}[u] set location${RESET}\r\n`);
+    }
 
     if (cart.length > 1) {
       stream.write(`  ${BOLD}Items:${RESET}\r\n`);
@@ -37,13 +47,85 @@ export function showOrderConfirm(stream, ctx) {
     }
 
     stream.write(`\r\n`);
-    stream.write(`  ${GREEN}[Enter]${RESET} Confirm Order  ${GRAY}[Backspace] Back  [q] Quit${RESET}\r\n`);
+    stream.write(`  ${GREEN}[Enter]${RESET} Confirm Order  ${GRAY}[Backspace] Back  [u] Update location  [q] Quit${RESET}\r\n`);
   }
 
   render();
 
+  async function startLocationUpdate() {
+    mode = 'location_update';
+    try {
+      const tokenResult = await requestLocationToken(session.token);
+      stream.write(CLEAR);
+      stream.write(`\r\n`);
+      stream.write(`  ${BOLD}${AMBER}📍 Update Location${RESET}\r\n`);
+      stream.write(`  ${BROWN}─────────────────────────────────────────────${RESET}\r\n`);
+      stream.write(`\r\n`);
+      stream.write(`  ${WHITE}Open this link on your phone or browser:${RESET}\r\n`);
+      stream.write(`\r\n`);
+      stream.write(`  ${CYAN}${BOLD}${tokenResult.url}${RESET}\r\n`);
+      stream.write(`\r\n`);
+      stream.write(`  ${YELLOW}Waiting for location...${RESET}\r\n`);
+      stream.write(`\r\n`);
+      stream.write(`  ${GRAY}[Enter] Skip${RESET}\r\n`);
+
+      let attempts = 0;
+      pollTimer = setInterval(async () => {
+        attempts++;
+        if (attempts >= 40) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+          mode = 'confirm';
+          render();
+          return;
+        }
+
+        try {
+          const locStatus = await getLocationStatus(session.token);
+          if (locStatus.hasLocation) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+            session.location = {
+              lat: locStatus.location.lat,
+              lng: locStatus.location.lng,
+              city: locStatus.location.address || '',
+            };
+            stream.write(`\r\n  ${GREEN}✔ Location updated!${RESET}\r\n`);
+            setTimeout(() => { mode = 'confirm'; render(); }, 500);
+          }
+        } catch {
+          // ignore poll errors
+        }
+      }, 3000);
+    } catch {
+      mode = 'confirm';
+      render();
+    }
+  }
+
   const onData = async (data) => {
     const key = data.toString();
+
+    if (key === '\x03') {
+      if (pollTimer) clearInterval(pollTimer);
+      stream.write(`\r\n  ${GRAY}Goodbye! ☕${RESET}\r\n\r\n`);
+      stream.end();
+      return;
+    }
+
+    if (mode === 'location_update') {
+      if (key === '\r' || key === '\n') {
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        mode = 'confirm';
+        render();
+      }
+      return;
+    }
+
+    if (key === 'u') {
+      startLocationUpdate();
+      return;
+    }
 
     if (key === '\r' || key === '\n') {
       stream.removeListener('data', onData);
@@ -87,7 +169,7 @@ export function showOrderConfirm(stream, ctx) {
       }
     } else if (key === '\x7f') {
       navigate(showMenu);
-    } else if (key === 'q' || key === '\x03') {
+    } else if (key === 'q') {
       stream.write(`\r\n  ${GRAY}Goodbye! ☕${RESET}\r\n\r\n`);
       stream.end();
     }
@@ -95,5 +177,8 @@ export function showOrderConfirm(stream, ctx) {
 
   stream.on('data', onData);
 
-  return () => stream.removeListener('data', onData);
+  return () => {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    stream.removeListener('data', onData);
+  };
 }

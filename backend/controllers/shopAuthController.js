@@ -2,6 +2,58 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import Shop from '../models/Shop.js';
 
+export const signup = async (req, res) => {
+  try {
+    const { shopName, ownerName, email, password } = req.body;
+
+    if (!shopName || !ownerName || !email || !password) {
+      return res.status(400).json({ error: 'Shop name, owner name, email, and password are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const existing = await Shop.findOne({ 'owner.email': email.trim().toLowerCase() });
+    if (existing) {
+      return res.status(409).json({ error: 'A shop with this email already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const authToken = crypto.randomUUID();
+
+    const shop = await Shop.create({
+      name: shopName,
+      owner: {
+        name: ownerName,
+        email: email.trim().toLowerCase(),
+        password: hashedPassword,
+        authToken,
+        authTokenCreatedAt: new Date(),
+      },
+      location: { type: 'Point', coordinates: [0, 0] },
+      menu: [],
+      telegramChatId: '',
+      status: 'pending',
+    });
+
+    res.status(201).json({
+      token: authToken,
+      shop: {
+        id: shop._id,
+        name: shop.name,
+        slug: shop.slug,
+      },
+    });
+  } catch (error) {
+    console.error('Shop signup error:', error);
+    if (error.code === 11000) {
+      return res.status(409).json({ error: 'A shop with this name already exists' });
+    }
+    res.status(500).json({ error: 'Signup failed' });
+  }
+};
+
 export const setupPassword = async (req, res) => {
   try {
     const { email, password } = req.body;

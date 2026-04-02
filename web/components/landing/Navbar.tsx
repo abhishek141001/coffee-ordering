@@ -30,6 +30,12 @@ export default function Navbar() {
           >
             For Shops
           </Link>
+          <Link
+            href="/dashboard/login"
+            className="hidden sm:block text-sm text-gray-400 hover:text-white transition-colors px-3 py-2"
+          >
+            Login
+          </Link>
           <a
             href="#get-started"
             className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25"

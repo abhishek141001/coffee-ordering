@@ -11,6 +11,8 @@ const env = {
   telegramChatId: process.env.TELEGRAM_CHAT_ID,
   baseUrl: process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`,
   dashboardUrl: process.env.DASHBOARD_URL || 'http://localhost:3000',
+  adminEmail: process.env.ADMIN_EMAIL,
+  adminPasswordHash: process.env.ADMIN_PASSWORD_HASH,
 };
 
 const REQUIRED_VARS = [

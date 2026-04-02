@@ -10,6 +10,8 @@ import shopRoutes from './routes/shopRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
 import shopAuthRoutes from './routes/shopAuthRoutes.js';
 import shopDashboardRoutes from './routes/shopDashboardRoutes.js';
+import adminAuthRoutes from './routes/adminAuthRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
 
@@ -32,6 +34,8 @@ app.use('/shops', shopRoutes);
 app.use('/order', orderRoutes);
 app.use('/shop-auth', shopAuthRoutes);
 app.use('/shop-dashboard', shopDashboardRoutes);
+app.use('/admin-auth', adminAuthRoutes);
+app.use('/admin', adminRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

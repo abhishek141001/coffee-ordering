@@ -25,6 +25,14 @@ export async function login(username) {
   return request('POST', '/auth/login', { username });
 }
 
+export async function requestLocationToken(token) {
+  return request('POST', '/auth/location-token', null, token);
+}
+
+export async function getLocationStatus(token) {
+  return request('GET', '/auth/location-status', null, token);
+}
+
 export async function fetchNearbyShops(lat, lng, radius = 50000) {
   return request('GET', `/shops/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
 }

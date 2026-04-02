@@ -59,6 +59,29 @@ export interface Shop {
   status: string;
 }
 
+export interface PlatformStats {
+  totalShops: number;
+  activeShops: number;
+  inactiveShops: number;
+  pendingShops: number;
+  totalUsers: number;
+  totalOrders: number;
+  totalRevenue: number;
+  ordersToday: number;
+  revenueToday: number;
+}
+
+export interface AdminUser {
+  _id: string;
+  username: string;
+  phone: string;
+  createdAt: string;
+}
+
+export interface AdminOrder extends Omit<Order, "shopId"> {
+  shopId: { _id: string; name: string; slug: string } | string;
+}
+
 export interface OnboardFormData {
   name: string;
   owner: { name: string; email: string; phone: string };

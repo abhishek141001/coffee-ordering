@@ -1,13 +1,14 @@
-import { CLEAR, BOLD, RESET, AMBER, BROWN, GREEN, RED, YELLOW, GRAY, WHITE, BG_AMBER } from '../app.js';
-import { signup, login } from '../../lib/api.js';
+import { CLEAR, BOLD, RESET, AMBER, BROWN, GREEN, RED, YELLOW, GRAY, WHITE, BG_AMBER, CYAN } from '../app.js';
+import { signup, login, requestLocationToken, getLocationStatus } from '../../lib/api.js';
 import { showShops } from './shops.js';
 
 export function showLogin(stream, ctx) {
   const { navigate, session } = ctx;
-  let mode = 'choose'; // 'choose', 'login', 'signup_user', 'signup_phone'
+  let mode = 'choose'; // 'choose', 'login', 'signup_user', 'signup_phone', 'location'
   let selected = 0; // 0 = login, 1 = signup
   let username = '';
   let phone = '';
+  let pollTimer = null;
 
   function renderChoose() {
     stream.write(CLEAR);
@@ -78,6 +79,80 @@ export function showLogin(stream, ctx) {
 
   render();
 
+  async function checkLocationAndProceed() {
+    try {
+      const locStatus = await getLocationStatus(session.token);
+      if (locStatus.hasLocation) {
+        session.location = {
+          lat: locStatus.location.lat,
+          lng: locStatus.location.lng,
+          city: locStatus.location.address || session.location?.city || '',
+        };
+        navigate(showShops);
+        return;
+      }
+    } catch {
+      // ignore - proceed to location capture
+    }
+
+    // No saved location - request a location token
+    try {
+      const tokenResult = await requestLocationToken(session.token);
+      showLocationPrompt(tokenResult.url);
+    } catch {
+      // If location token fails, just proceed
+      navigate(showShops);
+    }
+  }
+
+  function showLocationPrompt(url) {
+    mode = 'location';
+    stream.write(CLEAR);
+    stream.write(`\r\n`);
+    stream.write(`  ${BOLD}${AMBER}📍 Share Your Location${RESET}\r\n`);
+    stream.write(`  ${BROWN}─────────────────────────────────────────────${RESET}\r\n`);
+    stream.write(`\r\n`);
+    stream.write(`  ${WHITE}To find nearby coffee shops, open this link${RESET}\r\n`);
+    stream.write(`  ${WHITE}on your phone or browser:${RESET}\r\n`);
+    stream.write(`\r\n`);
+    stream.write(`  ${CYAN}${BOLD}${url}${RESET}\r\n`);
+    stream.write(`\r\n`);
+    stream.write(`  ${YELLOW}Waiting for location...${RESET}\r\n`);
+    stream.write(`\r\n`);
+    stream.write(`  ${GRAY}[Enter] Skip and show all shops${RESET}\r\n`);
+
+    // Poll every 3 seconds
+    let attempts = 0;
+    const maxAttempts = 40; // ~2 minutes
+
+    pollTimer = setInterval(async () => {
+      attempts++;
+      if (attempts >= maxAttempts) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+        navigate(showShops);
+        return;
+      }
+
+      try {
+        const locStatus = await getLocationStatus(session.token);
+        if (locStatus.hasLocation) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+          session.location = {
+            lat: locStatus.location.lat,
+            lng: locStatus.location.lng,
+            city: locStatus.location.address || '',
+          };
+          stream.write(`\r\n  ${GREEN}✔ Location received!${RESET}\r\n`);
+          setTimeout(() => navigate(showShops), 500);
+        }
+      } catch {
+        // ignore poll errors
+      }
+    }, 3000);
+  }
+
   async function doLogin() {
     stream.removeListener('data', onData);
     stream.write(`\r\n  ${YELLOW}Logging in...${RESET}\r\n`);
@@ -87,7 +162,8 @@ export function showLogin(stream, ctx) {
       session.token = result.token;
       session.username = result.username;
       stream.write(`  ${GREEN}✔ Welcome back, ${BOLD}${result.username}${RESET}${GREEN}!${RESET}\r\n`);
-      setTimeout(() => navigate(showShops), 500);
+      stream.on('data', onData);
+      setTimeout(() => checkLocationAndProceed(), 500);
     } catch (err) {
       stream.write(`  ${RED}✖ ${err.message}${RESET}\r\n`);
       stream.write(`  ${GRAY}Press any key to try again${RESET}\r\n`);
@@ -109,7 +185,8 @@ export function showLogin(stream, ctx) {
       session.token = result.token;
       session.username = result.username;
       stream.write(`  ${GREEN}✔ Account created! Welcome, ${BOLD}${result.username}${RESET}${GREEN}!${RESET}\r\n`);
-      setTimeout(() => navigate(showShops), 500);
+      stream.on('data', onData);
+      setTimeout(() => checkLocationAndProceed(), 500);
     } catch (err) {
       stream.write(`  ${RED}✖ ${err.message}${RESET}\r\n`);
       stream.write(`  ${GRAY}Press any key to try again${RESET}\r\n`);
@@ -126,13 +203,23 @@ export function showLogin(stream, ctx) {
   const onData = (data) => {
     const key = data.toString();
 
-    if (key === 'q' && mode === 'choose') {
+    if (key === '\x03') {
+      if (pollTimer) clearInterval(pollTimer);
       stream.write(`\r\n  ${GRAY}Goodbye! ☕${RESET}\r\n\r\n`);
       stream.end();
       return;
     }
 
-    if (key === '\x03') {
+    if (mode === 'location') {
+      if (key === '\r' || key === '\n') {
+        // Skip location - proceed to shops
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        navigate(showShops);
+      }
+      return;
+    }
+
+    if (key === 'q' && mode === 'choose') {
       stream.write(`\r\n  ${GRAY}Goodbye! ☕${RESET}\r\n\r\n`);
       stream.end();
       return;
@@ -186,5 +273,8 @@ export function showLogin(stream, ctx) {
 
   stream.on('data', onData);
 
-  return () => stream.removeListener('data', onData);
+  return () => {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    stream.removeListener('data', onData);
+  };
 }

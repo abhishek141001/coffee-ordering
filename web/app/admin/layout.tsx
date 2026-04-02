@@ -3,51 +3,43 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { getShopToken, getShopInfo, clearShopToken } from "../../lib/shopAuth";
+import { getAdminToken, clearAdminToken } from "../../lib/adminAuth";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Orders", icon: "📋" },
-  { href: "/dashboard/menu", label: "Menu", icon: "☕" },
-  { href: "/dashboard/stats", label: "Stats", icon: "📊" },
-  { href: "/dashboard/settings", label: "Settings", icon: "⚙️" },
+  { href: "/admin", label: "Overview", icon: "📊" },
+  { href: "/admin/shops", label: "Shops", icon: "☕" },
+  { href: "/admin/users", label: "Users", icon: "👤" },
+  { href: "/admin/orders", label: "Orders", icon: "📋" },
 ];
 
-export default function DashboardLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [shopName, setShopName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const isAuthPage =
-    pathname === "/dashboard/login" ||
-    pathname === "/dashboard/signup" ||
-    pathname === "/dashboard/setup-password";
+  const isAuthPage = pathname === "/admin/login";
 
   useEffect(() => {
     if (isAuthPage) return;
-    const token = getShopToken();
+    const token = getAdminToken();
     if (!token) {
-      router.push("/dashboard/login");
-      return;
+      router.push("/admin/login");
     }
-    const info = getShopInfo();
-    if (info) setShopName(info.name);
   }, [isAuthPage, router]);
 
   if (isAuthPage) return <>{children}</>;
 
   const handleLogout = () => {
-    clearShopToken();
-    router.push("/dashboard/login");
+    clearAdminToken();
+    router.push("/admin/login");
   };
 
   return (
     <div className="flex h-screen bg-[#060b18]">
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-20 lg:hidden"
@@ -55,27 +47,21 @@ export default function DashboardLayout({
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-[#0a1628] border-r border-gray-800 flex flex-col transition-transform lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="p-6 border-b border-gray-800">
-          <h1 className="text-lg font-bold text-amber-500">
-            Terminal Coffee
-          </h1>
-          {shopName && (
-            <p className="text-sm text-gray-400 mt-1 truncate">{shopName}</p>
-          )}
+          <h1 className="text-lg font-bold text-amber-500">Admin Panel</h1>
+          <p className="text-sm text-gray-400 mt-1">Terminal Coffee</p>
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
           {NAV_ITEMS.map((item) => {
             const isActive =
-              item.href === "/dashboard"
-                ? pathname === "/dashboard" ||
-                  pathname.startsWith("/dashboard/orders")
+              item.href === "/admin"
+                ? pathname === "/admin"
                 : pathname.startsWith(item.href);
             return (
               <Link
@@ -105,7 +91,6 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-gray-800 flex items-center px-6 lg:px-8 gap-4">
           <button
@@ -128,11 +113,10 @@ export default function DashboardLayout({
           </button>
           <h2 className="text-lg font-semibold text-white">
             {NAV_ITEMS.find((item) =>
-              item.href === "/dashboard"
-                ? pathname === "/dashboard" ||
-                  pathname.startsWith("/dashboard/orders")
+              item.href === "/admin"
+                ? pathname === "/admin"
                 : pathname.startsWith(item.href)
-            )?.label || "Dashboard"}
+            )?.label || "Admin"}
           </h2>
         </header>
 

@@ -25,12 +25,12 @@ const shopSchema = new mongoose.Schema(
       authTokenCreatedAt: { type: Date },
     },
     location: {
-      type: { type: String, enum: ['Point'], required: true, default: 'Point' },
-      coordinates: { type: [Number], required: true }, // [lng, lat]
+      type: { type: String, enum: ['Point'], default: 'Point' },
+      coordinates: { type: [Number], default: [0, 0] }, // [lng, lat]
       address: { type: String, default: '' },
     },
     menu: [menuItemSchema],
-    telegramChatId: { type: String, required: true },
+    telegramChatId: { type: String, default: '' },
     operatingHours: {
       open: { type: String, default: '08:00' },
       close: { type: String, default: '22:00' },
