@@ -2,7 +2,7 @@ import Shop from '../models/Shop.js';
 
 export const getNearbyShops = async (req, res) => {
   try {
-    const { lat, lng, radius = 5000 } = req.query;
+    const { lat, lng, radius = 50000 } = req.query;
 
     if (!lat || !lng) {
       return res.status(400).json({ error: 'lat and lng query params are required' });
@@ -44,6 +44,30 @@ export const getNearbyShops = async (req, res) => {
   } catch (error) {
     console.error('Get nearby shops error:', error);
     res.status(500).json({ error: 'Failed to fetch nearby shops' });
+  }
+};
+
+export const getAllShops = async (req, res) => {
+  try {
+    const shops = await Shop.find({ status: 'active' })
+      .select('name slug operatingHours menu location.address')
+      .sort({ name: 1 })
+      .limit(50)
+      .lean();
+
+    const result = shops.map((s) => ({
+      _id: s._id,
+      name: s.name,
+      slug: s.slug,
+      address: s.location?.address || '',
+      operatingHours: s.operatingHours,
+      menuCount: s.menu?.length || 0,
+    }));
+
+    res.json({ shops: result });
+  } catch (error) {
+    console.error('Get all shops error:', error);
+    res.status(500).json({ error: 'Failed to fetch shops' });
   }
 };
 

@@ -33,3 +33,26 @@ export async function geolocateIP(ip) {
 
   return null;
 }
+
+export async function geocodeCity(query) {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+      { headers: { 'User-Agent': 'CaffeineOperator/1.0' } }
+    );
+    const data = await response.json();
+
+    if (data && data.length > 0) {
+      return {
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon),
+        city: data[0].display_name.split(',')[0],
+        region: data[0].display_name.split(',').slice(1, 3).join(',').trim(),
+      };
+    }
+  } catch (error) {
+    console.error('Geocode failed:', error.message);
+  }
+
+  return null;
+}

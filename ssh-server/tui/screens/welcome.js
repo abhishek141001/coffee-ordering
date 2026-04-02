@@ -12,7 +12,7 @@ export function showWelcome(stream, ctx) {
   stream.write(`\r\n`);
   stream.write(`  ${BROWN}╔══════════════════════════════════════════╗${RESET}\r\n`);
   stream.write(`  ${BROWN}║${RESET}                                          ${BROWN}║${RESET}\r\n`);
-  stream.write(`  ${BROWN}║${RESET}        ${AMBER}☕  Terminal Coffee  ☕${RESET}         ${BROWN}║${RESET}\r\n`);
+  stream.write(`  ${BROWN}║${RESET}     ${AMBER}☕  CaffeineOperator  ☕${RESET}          ${BROWN}║${RESET}\r\n`);
   stream.write(`  ${BROWN}║${RESET}                                          ${BROWN}║${RESET}\r\n`);
   stream.write(`  ${BROWN}║${RESET}     ${WHITE}Order coffee from your terminal${RESET}     ${BROWN}║${RESET}\r\n`);
   stream.write(`  ${BROWN}║${RESET}                                          ${BROWN}║${RESET}\r\n`);
