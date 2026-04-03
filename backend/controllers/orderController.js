@@ -27,7 +27,7 @@ function validateItemAgainstGlobal(itemName, size) {
 
 export const createOrder = async (req, res) => {
   try {
-    const { shopId } = req.body;
+    const { shopId, userLocation } = req.body;
     let shop = null;
 
     if (shopId) {
@@ -82,6 +82,9 @@ export const createOrder = async (req, res) => {
       userId: req.user._id,
       shopId: shop?._id || undefined,
       status: 'pending_payment',
+      userLocation: userLocation && userLocation.lat && userLocation.lng
+        ? { lat: userLocation.lat, lng: userLocation.lng }
+        : undefined,
     });
 
     let paymentLinkId, paymentLinkUrl;

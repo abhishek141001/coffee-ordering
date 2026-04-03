@@ -153,6 +153,16 @@ export default function OrderDetailPage() {
               {user.phone}
             </a>
           )}
+          {order.userLocation && (
+            <a
+              href={`https://www.google.com/maps?q=${order.userLocation.lat},${order.userLocation.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-amber-500 hover:text-amber-400 text-sm flex items-center gap-1 mt-2"
+            >
+              View customer location on Maps
+            </a>
+          )}
         </div>
 
         <div className="border-t border-gray-800 pt-4">

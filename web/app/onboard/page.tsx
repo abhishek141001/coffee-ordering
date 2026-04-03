@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { MenuItem, OnboardFormData } from "../../lib/types";
 import { apiCall } from "../../lib/api";
+import { setShopToken, setShopInfo } from "../../lib/shopAuth";
 
 const STEPS = [
-  "Shop Info",
+  "Account",
   "Location",
   "Menu",
   "Telegram",
@@ -22,11 +24,11 @@ function StepIndicator({
   steps: string[];
 }) {
   return (
-    <div className="flex items-center gap-2 mb-8 overflow-x-auto">
+    <div className="flex items-center gap-1 sm:gap-2 mb-8 overflow-x-auto pb-2">
       {steps.map((step, i) => (
-        <div key={step} className="flex items-center gap-2">
+        <div key={step} className="flex items-center gap-1 sm:gap-2">
           <div
-            className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+            className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
               i <= current
                 ? "bg-amber-600 text-white"
                 : "bg-slate-700 text-slate-500"
@@ -35,7 +37,7 @@ function StepIndicator({
             {i + 1}
           </div>
           <span
-            className={`text-sm whitespace-nowrap ${
+            className={`text-xs sm:text-sm whitespace-nowrap hidden sm:inline ${
               i <= current ? "text-white" : "text-slate-500"
             }`}
           >
@@ -43,7 +45,7 @@ function StepIndicator({
           </span>
           {i < steps.length - 1 && (
             <div
-              className={`w-8 h-0.5 ${
+              className={`w-4 sm:w-8 h-0.5 ${
                 i < current ? "bg-amber-600" : "bg-slate-700"
               }`}
             />
@@ -80,22 +82,19 @@ function Input({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full bg-[#122240] border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:border-amber-600 focus:outline-none"
+        className="w-full bg-[#122240] border border-slate-600 rounded-lg px-4 py-2.5 sm:py-2 text-white placeholder-slate-500 focus:border-amber-600 focus:outline-none text-base sm:text-sm"
       />
     </div>
   );
 }
 
 export default function OnboardPage() {
+  const router = useRouter();
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [shopResult, setShopResult] = useState<{
-    id: string;
-    name: string;
-    slug: string;
-  } | null>(null);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [form, setForm] = useState<OnboardFormData>({
     name: "",
@@ -156,16 +155,61 @@ export default function OnboardPage() {
     }));
   }
 
+  function validateStep(): boolean {
+    setErrorMsg("");
+    if (step === 0) {
+      if (!form.name || !form.owner.name || !form.owner.email) {
+        setErrorMsg("Please fill in all required fields");
+        return false;
+      }
+      if (!password || password.length < 6) {
+        setErrorMsg("Password must be at least 6 characters");
+        return false;
+      }
+      if (password !== confirmPassword) {
+        setErrorMsg("Passwords do not match");
+        return false;
+      }
+    }
+    if (step === 1) {
+      if (!form.location.address || !form.location.coordinates[0] || !form.location.coordinates[1]) {
+        setErrorMsg("Please fill in address and coordinates");
+        return false;
+      }
+    }
+    if (step === 2) {
+      if (form.menu.some((item) => !item.name || !item.basePrice)) {
+        setErrorMsg("Each menu item needs a name and price");
+        return false;
+      }
+    }
+    if (step === 3) {
+      if (!form.telegramChatId) {
+        setErrorMsg("Telegram Chat ID is required");
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function handleNext() {
+    if (validateStep()) {
+      setStep((s) => s + 1);
+    }
+  }
+
   async function handleSubmit() {
     setSubmitting(true);
     setErrorMsg("");
     try {
       const result = await apiCall<{
         message: string;
+        token: string;
         shop: { id: string; name: string; slug: string };
-      }>("POST", "/shops/onboard", form);
-      setShopResult(result.shop);
-      setSuccess(true);
+      }>("POST", "/shops/onboard", { ...form, password });
+      setShopToken(result.token);
+      setShopInfo(result.shop);
+      router.push("/dashboard");
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Registration failed");
     } finally {
@@ -173,50 +217,8 @@ export default function OnboardPage() {
     }
   }
 
-  if (success && shopResult) {
-    return (
-      <main className="flex-1 flex items-center justify-center px-6">
-        <div className="max-w-md w-full text-center">
-          <div className="text-6xl mb-4">&#9749;</div>
-          <h1 className="text-3xl font-bold mb-2 text-green-400">
-            Shop Registered!
-          </h1>
-          <p className="text-slate-400 mb-6">
-            <strong className="text-white">{shopResult.name}</strong> is now
-            live. Orders from nearby developers will start coming in via
-            Telegram.
-          </p>
-          <div className="bg-[#122240] rounded-lg p-4 border border-slate-700 mb-6 text-left">
-            <p className="text-sm text-slate-400">
-              Shop ID:{" "}
-              <code className="text-amber-400">{shopResult.id}</code>
-            </p>
-            <p className="text-sm text-slate-400">
-              Slug:{" "}
-              <code className="text-amber-400">{shopResult.slug}</code>
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/dashboard/setup-password"
-              className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Set Up Dashboard Password
-            </Link>
-            <Link
-              href="/"
-              className="inline-block bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Back to Home
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <main className="flex-1 px-6 py-12">
+    <main className="min-h-screen bg-[#060b18] px-4 sm:px-6 py-8 sm:py-12">
       <div className="max-w-2xl mx-auto">
         <Link
           href="/"
@@ -225,15 +227,15 @@ export default function OnboardPage() {
           &larr; Back to home
         </Link>
 
-        <h1 className="text-3xl font-bold mb-2">Register Your Coffee Shop</h1>
-        <p className="text-slate-400 mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Register Your Coffee Shop</h1>
+        <p className="text-slate-400 mb-6 sm:mb-8 text-sm sm:text-base">
           Set up your shop in 5 minutes. Start receiving orders from developers
           nearby.
         </p>
 
         <StepIndicator current={step} steps={STEPS} />
 
-        {/* Step 1: Shop Info */}
+        {/* Step 1: Account (Shop Info + Password) */}
         {step === 0 && (
           <div className="space-y-4">
             <Input
@@ -270,6 +272,29 @@ export default function OnboardPage() {
               }
               placeholder="+91 98765 43210"
             />
+            <div className="border-t border-slate-700 pt-4 mt-2">
+              <p className="text-sm text-slate-400 mb-3">
+                Set a password for your dashboard login
+              </p>
+              <div className="space-y-4">
+                <Input
+                  label="Password"
+                  value={password}
+                  onChange={setPassword}
+                  type="password"
+                  placeholder="Min. 6 characters"
+                  required
+                />
+                <Input
+                  label="Confirm Password"
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  type="password"
+                  placeholder="Re-enter password"
+                  required
+                />
+              </div>
+            </div>
           </div>
         )}
 
@@ -287,7 +312,7 @@ export default function OnboardPage() {
               placeholder="123 MG Road, Bangalore"
               required
             />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Longitude"
                 value={String(form.location.coordinates[0] || "")}
@@ -353,7 +378,7 @@ export default function OnboardPage() {
                     </button>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Input
                     label="Name"
                     value={item.name}
@@ -417,7 +442,7 @@ export default function OnboardPage() {
                 <li>Send a message to your new bot</li>
                 <li>
                   Visit{" "}
-                  <code className="text-amber-400">
+                  <code className="text-amber-400 text-xs sm:text-sm break-all">
                     https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates
                   </code>
                 </li>
@@ -440,7 +465,7 @@ export default function OnboardPage() {
         {/* Step 5: Hours */}
         {step === 4 && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Opening Time"
                 value={form.operatingHours.open}
@@ -519,16 +544,16 @@ export default function OnboardPage() {
         {/* Navigation */}
         <div className="flex justify-between mt-8">
           <button
-            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            onClick={() => { setStep((s) => Math.max(0, s - 1)); setErrorMsg(""); }}
             disabled={step === 0}
-            className="px-4 py-2 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2.5 sm:py-2 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             Back
           </button>
           {step < STEPS.length - 1 ? (
             <button
-              onClick={() => setStep((s) => s + 1)}
-              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              onClick={handleNext}
+              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 sm:py-2 rounded-lg font-medium transition-colors"
             >
               Next
             </button>
@@ -536,12 +561,22 @@ export default function OnboardPage() {
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 sm:py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
             >
               {submitting ? "Registering..." : "Register Shop"}
             </button>
           )}
         </div>
+
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Already have an account?{" "}
+          <Link
+            href="/dashboard/login"
+            className="text-amber-500 hover:text-amber-400"
+          >
+            Sign in
+          </Link>
+        </p>
       </div>
     </main>
   );

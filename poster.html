@@ -15,8 +15,8 @@
     width: 210mm;
     height: 297mm;
     margin: 0 auto;
-    background: #0a0a0a;
-    color: #e0e0e0;
+    background: #f5f5f0;
+    color: #2a2a2a;
     font-family: 'Inter', -apple-system, sans-serif;
     overflow: hidden;
     position: relative;
@@ -29,7 +29,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(rgba(0, 255, 136, 0.07) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(0, 120, 60, 0.08) 1px, transparent 1px);
     background-size: 18px 18px;
     z-index: 0;
   }
@@ -38,7 +38,7 @@
   .glow-1 {
     position: absolute;
     width: 200mm; height: 200mm;
-    background: radial-gradient(circle, rgba(0, 255, 136, 0.10) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(0, 160, 80, 0.08) 0%, transparent 65%);
     top: -60mm; right: -40mm;
     border-radius: 50%;
     z-index: 0;
@@ -46,7 +46,7 @@
   .glow-2 {
     position: absolute;
     width: 160mm; height: 160mm;
-    background: radial-gradient(circle, rgba(255, 170, 50, 0.08) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(200, 130, 30, 0.06) 0%, transparent 65%);
     bottom: 30mm; left: -50mm;
     border-radius: 50%;
     z-index: 0;
@@ -54,7 +54,7 @@
   .glow-3 {
     position: absolute;
     width: 120mm; height: 120mm;
-    background: radial-gradient(circle, rgba(0, 200, 255, 0.05) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(0, 140, 200, 0.05) 0%, transparent 65%);
     bottom: -20mm; right: 10mm;
     border-radius: 50%;
     z-index: 0;
@@ -76,7 +76,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 7mm 10mm 5mm;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
   }
   .brand {
     font-family: 'JetBrains Mono', monospace;
@@ -85,13 +85,13 @@
     letter-spacing: 2.5px;
     text-transform: uppercase;
   }
-  .brand .t { color: #ffffff; }
-  .brand .c { color: #00ff88; }
+  .brand .t { color: #1a1a1a; }
+  .brand .c { color: #00875a; }
   .wifi-badge {
     font-family: 'JetBrains Mono', monospace;
     font-size: 7.5pt;
-    color: rgba(255,255,255,0.35);
-    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(0,0,0,0.4);
+    border: 1px solid rgba(0,0,0,0.1);
     padding: 2mm 4mm;
     border-radius: 20px;
     letter-spacing: 0.5px;
@@ -104,9 +104,9 @@
   .hero-eyebrow {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9pt;
-    color: #00ff88;
+    color: #00875a;
     margin-bottom: 4mm;
-    opacity: 0.75;
+    opacity: 0.85;
     letter-spacing: 0.5px;
   }
   .hero h1 {
@@ -114,11 +114,11 @@
     font-weight: 900;
     line-height: 1.05;
     letter-spacing: -1.5px;
-    color: #ffffff;
+    color: #1a1a1a;
   }
   .hero h1 em {
     font-style: normal;
-    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+    background: linear-gradient(135deg, #00875a 0%, #006644 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -126,7 +126,7 @@
   .hero-sub {
     margin-top: 5mm;
     font-size: 12.5pt;
-    color: rgba(255,255,255,0.45);
+    color: rgba(0,0,0,0.45);
     line-height: 1.55;
     max-width: 150mm;
   }
@@ -134,17 +134,18 @@
   /* ── Terminal block ── */
   .terminal {
     margin: 7mm 10mm 0;
-    background: #111111;
-    border: 1px solid rgba(255,255,255,0.07);
+    background: #1a1a2e;
+    border: 1px solid rgba(0,0,0,0.12);
     border-radius: 3.5mm;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   }
   .terminal-bar {
     display: flex;
     align-items: center;
     gap: 2.5mm;
     padding: 3mm 4mm;
-    background: rgba(255,255,255,0.025);
+    background: rgba(0,0,0,0.15);
     border-bottom: 1px solid rgba(255,255,255,0.05);
   }
   .dot { width: 3mm; height: 3mm; border-radius: 50%; }
@@ -155,7 +156,7 @@
     margin-left: 2mm;
     font-family: 'JetBrains Mono', monospace;
     font-size: 7.5pt;
-    color: rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.4);
   }
   .terminal-body {
     padding: 5mm 5.5mm;
@@ -187,10 +188,11 @@
   }
   .feat {
     flex: 1;
-    background: rgba(255,255,255,0.025);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.08);
     border-radius: 3mm;
     padding: 4.5mm;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   }
   .feat-icon {
     font-size: 20pt;
@@ -201,12 +203,12 @@
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     font-size: 9pt;
-    color: #fff;
+    color: #1a1a1a;
     margin-bottom: 1.5mm;
   }
   .feat-desc {
     font-size: 8.5pt;
-    color: rgba(255,255,255,0.35);
+    color: rgba(0,0,0,0.45);
     line-height: 1.45;
   }
 
@@ -217,7 +219,7 @@
   .steps-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 7.5pt;
-    color: rgba(255,255,255,0.25);
+    color: rgba(0,0,0,0.35);
     text-transform: uppercase;
     letter-spacing: 3px;
     margin-bottom: 3.5mm;
@@ -232,8 +234,8 @@
     display: flex;
     align-items: center;
     gap: 3mm;
-    background: rgba(0, 255, 136, 0.035);
-    border: 1px solid rgba(0, 255, 136, 0.08);
+    background: rgba(0, 135, 90, 0.06);
+    border: 1px solid rgba(0, 135, 90, 0.12);
     border-radius: 2.5mm;
     padding: 3.5mm 4mm;
   }
@@ -241,27 +243,27 @@
     font-family: 'JetBrains Mono', monospace;
     font-weight: 800;
     font-size: 16pt;
-    color: #00ff88;
-    opacity: 0.5;
+    color: #00875a;
+    opacity: 0.6;
     line-height: 1;
   }
   .step-text {
     font-size: 9.5pt;
-    color: rgba(255,255,255,0.6);
+    color: rgba(0,0,0,0.55);
     line-height: 1.35;
   }
-  .step-text strong { color: #fff; }
+  .step-text strong { color: #1a1a1a; }
   .step-arrow {
     font-size: 14pt;
-    color: rgba(0,255,136,0.25);
+    color: rgba(0,135,90,0.35);
     flex-shrink: 0;
   }
 
   /* ── Big SSH callout ── */
   .ssh-callout {
     margin: 6mm 10mm 0;
-    background: linear-gradient(135deg, rgba(0,255,136,0.07), rgba(255,170,50,0.04));
-    border: 1.5px solid rgba(0,255,136,0.15);
+    background: linear-gradient(135deg, rgba(0,135,90,0.08), rgba(200,130,30,0.05));
+    border: 1.5px solid rgba(0,135,90,0.18);
     border-radius: 3.5mm;
     padding: 5mm 6mm;
     display: flex;
@@ -277,13 +279,13 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 14pt;
     font-weight: 700;
-    color: #fff;
+    color: #1a1a1a;
     margin-bottom: 1mm;
   }
-  .ssh-cmd span { color: #00ff88; }
+  .ssh-cmd span { color: #00875a; }
   .ssh-note {
     font-size: 9pt;
-    color: rgba(255,255,255,0.35);
+    color: rgba(0,0,0,0.4);
     line-height: 1.4;
   }
 
@@ -294,7 +296,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    border-top: 1px solid rgba(0,0,0,0.08);
   }
   .qr-area {
     display: flex;
@@ -319,13 +321,13 @@
   }
   .qr-text {
     font-size: 9.5pt;
-    color: rgba(255,255,255,0.4);
+    color: rgba(0,0,0,0.45);
     line-height: 1.5;
   }
   .qr-text strong {
     display: block;
     font-size: 11pt;
-    color: #fff;
+    color: #1a1a1a;
     margin-bottom: 0.5mm;
   }
   .bottom-right {
@@ -334,10 +336,10 @@
   .tagline {
     font-family: 'JetBrains Mono', monospace;
     font-size: 8pt;
-    color: rgba(255,255,255,0.18);
+    color: rgba(0,0,0,0.25);
     line-height: 1.7;
   }
-  .tagline span { color: #00ff88; opacity: 0.7; }
+  .tagline span { color: #00875a; opacity: 0.8; }
 
   /* ── Print safety ── */
   @media print {

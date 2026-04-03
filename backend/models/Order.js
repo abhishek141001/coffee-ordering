@@ -59,6 +59,10 @@ const orderSchema = new mongoose.Schema(
     razorpay_refund_id: {
       type: String,
     },
+    userLocation: {
+      lat: { type: Number },
+      lng: { type: Number },
+    },
   },
   { timestamps: true }
 );

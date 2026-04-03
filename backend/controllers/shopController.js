@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import Shop from '../models/Shop.js';
 
 export const getNearbyShops = async (req, res) => {
@@ -115,10 +117,14 @@ export const getShopMenu = async (req, res) => {
 
 export const onboardShop = async (req, res) => {
   try {
-    const { name, owner, location, menu, telegramChatId, operatingHours } = req.body;
+    const { name, owner, location, menu, telegramChatId, operatingHours, password } = req.body;
 
     if (!name || !owner?.name || !owner?.email) {
       return res.status(400).json({ error: 'name, owner.name, and owner.email are required' });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
     if (!location?.coordinates || location.coordinates.length !== 2) {
@@ -131,6 +137,11 @@ export const onboardShop = async (req, res) => {
 
     if (!menu || !Array.isArray(menu) || menu.length === 0) {
       return res.status(400).json({ error: 'At least one menu item is required' });
+    }
+
+    const existing = await Shop.findOne({ 'owner.email': owner.email.trim().toLowerCase() });
+    if (existing) {
+      return res.status(409).json({ error: 'A shop with this email already exists' });
     }
 
     // Validate menu items
@@ -148,9 +159,18 @@ export const onboardShop = async (req, res) => {
       }
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const authToken = crypto.randomUUID();
+
     const shop = await Shop.create({
       name,
-      owner,
+      owner: {
+        ...owner,
+        email: owner.email.trim().toLowerCase(),
+        password: hashedPassword,
+        authToken,
+        authTokenCreatedAt: new Date(),
+      },
       location: {
         type: 'Point',
         coordinates: location.coordinates,
@@ -163,6 +183,7 @@ export const onboardShop = async (req, res) => {
 
     res.status(201).json({
       message: 'Shop registered successfully!',
+      token: authToken,
       shop: {
         id: shop._id,
         name: shop.name,

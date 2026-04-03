@@ -116,8 +116,10 @@ export function registerOrderCommand(program) {
 
       // Non-interactive mode (--item and --size flags)
       if (item && size) {
+        const location = getLocation();
         const body = { item: item.toLowerCase(), size: size.toLowerCase() };
         if (shopId) body.shopId = shopId;
+        if (location) body.userLocation = { lat: location.lat, lng: location.lng };
 
         const data = await apiCall('POST', '/order', body, { message: 'Placing your order...' });
         jsonOutput(data, program);
@@ -209,8 +211,10 @@ export function registerOrderCommand(program) {
         return;
       }
 
+      const location = getLocation();
       const body = { items: cart.map((c) => ({ item: c.item.toLowerCase(), size: c.size.toLowerCase() })) };
       if (shopId) body.shopId = shopId;
+      if (location) body.userLocation = { lat: location.lat, lng: location.lng };
 
       const data = await apiCall('POST', '/order', body, { message: 'Placing your order...' });
       jsonOutput(data, program);

@@ -31,6 +31,7 @@ export interface Order {
   razorpay_order_id?: string;
   razorpay_payment_id?: string;
   refund_status?: "none" | "processed" | "failed";
+  userLocation?: { lat: number; lng: number };
   createdAt: string;
   updatedAt: string;
 }

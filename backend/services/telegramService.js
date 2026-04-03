@@ -51,6 +51,9 @@ export const sendOrderNotification = async (order, user, chatId) => {
 
   const shopLine = order.shopId?.name ? `*Shop:* ${order.shopId.name}\n` : '';
   const phoneLine = customerPhone ? `*Customer Phone:* [${customerPhone}](tel:${customerPhone})\n` : '';
+  const locationLine = order.userLocation?.lat && order.userLocation?.lng
+    ? `📍 *Location:* [View on Maps](https://www.google.com/maps?q=${order.userLocation.lat},${order.userLocation.lng})\n`
+    : '';
 
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   let itemsBlock;
@@ -70,6 +73,7 @@ export const sendOrderNotification = async (order, user, chatId) => {
     itemsBlock +
     `*Customer:* ${customerName}\n` +
     phoneLine +
+    locationLine +
     `*Order ID:* \`${order._id}\`\n` +
     `🖥 [View on Dashboard](${dashboardUrl}/dashboard/orders/${order._id}${ottParam})\n\n` +
     `⏳ _Please respond within 2 minutes_`;
