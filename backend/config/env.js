@@ -14,7 +14,7 @@ const env = {
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
   telegramChatId: process.env.TELEGRAM_CHAT_ID,
   baseUrl: process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`,
-  dashboardUrl: process.env.DASHBOARD_URL || 'http://localhost:3000',
+  dashboardUrl: process.env.DASHBOARD_URL || 'http://localhost:3001',
   adminEmail: process.env.ADMIN_EMAIL,
   adminPassword: process.env.ADMIN_PASSWORD,
 };

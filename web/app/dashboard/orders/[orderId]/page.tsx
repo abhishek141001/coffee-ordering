@@ -149,7 +149,9 @@ export default function OrderDetailPage() {
           <h3 className="text-sm font-medium text-gray-400 mb-3">Customer</h3>
           <p className="text-white">{user.username}</p>
           {"phone" in user && user.phone && (
-            <p className="text-gray-500 text-sm">{user.phone}</p>
+            <a href={`tel:${user.phone}`} className="text-amber-500 hover:text-amber-400 text-sm block">
+              {user.phone}
+            </a>
           )}
         </div>
 

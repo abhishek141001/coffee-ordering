@@ -50,7 +50,7 @@ export const sendOrderNotification = async (order, user, chatId) => {
   const customerPhone = typeof user === 'object' && user?.phone ? user.phone : null;
 
   const shopLine = order.shopId?.name ? `*Shop:* ${order.shopId.name}\n` : '';
-  const phoneLine = customerPhone ? `*Customer Phone:* ${customerPhone}\n` : '';
+  const phoneLine = customerPhone ? `*Customer Phone:* [${customerPhone}](tel:${customerPhone})\n` : '';
 
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   let itemsBlock;
