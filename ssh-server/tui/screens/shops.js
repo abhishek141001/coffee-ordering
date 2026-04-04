@@ -60,7 +60,11 @@ export function showShops(stream, ctx) {
       shops = (data.shops || []).map((s) => {
         const now = new Date();
         const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        const isOpen = !s.operatingHours || (time >= s.operatingHours.open && time <= s.operatingHours.close);
+        const isOpen = !s.operatingHours || (
+          s.operatingHours.open <= s.operatingHours.close
+            ? time >= s.operatingHours.open && time <= s.operatingHours.close
+            : time >= s.operatingHours.open || time <= s.operatingHours.close
+        );
         return { ...s, _isOpen: isOpen };
       });
       render();

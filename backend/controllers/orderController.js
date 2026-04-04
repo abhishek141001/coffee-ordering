@@ -41,9 +41,13 @@ export const createOrder = async (req, res) => {
       if (shop.operatingHours) {
         const now = new Date();
         const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        if (time < shop.operatingHours.open || time > shop.operatingHours.close) {
+        const { open, close } = shop.operatingHours;
+        const isOpen = open <= close
+          ? time >= open && time <= close          // same-day: 08:00–22:00
+          : time >= open || time <= close;         // overnight: 08:00–04:00
+        if (!isOpen) {
           return res.status(400).json({
-            error: `Shop is closed. Operating hours: ${shop.operatingHours.open} – ${shop.operatingHours.close}`,
+            error: `Shop is closed. Operating hours: ${open} – ${close}`,
           });
         }
       }
