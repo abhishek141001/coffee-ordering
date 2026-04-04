@@ -7,6 +7,7 @@ interface ShopDetails {
   name: string;
   slug: string;
   status: "active" | "inactive";
+  operatingHours: { open: string; close: string };
   location: {
     latitude: number;
     longitude: number;
@@ -18,6 +19,11 @@ export default function SettingsPage() {
   const [status, setStatus] = useState<"active" | "inactive">("active");
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [openTime, setOpenTime] = useState("08:00");
+  const [closeTime, setCloseTime] = useState("22:00");
+  const [hoursUpdating, setHoursUpdating] = useState(false);
+  const [hoursSuccess, setHoursSuccess] = useState("");
+  const [hoursError, setHoursError] = useState("");
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState("");
   const [locationSuccess, setLocationSuccess] = useState("");
@@ -36,6 +42,10 @@ export default function SettingsPage() {
           "/shop-dashboard/details"
         );
         setStatus(data.status);
+        if (data.operatingHours) {
+          setOpenTime(data.operatingHours.open);
+          setCloseTime(data.operatingHours.close);
+        }
         if (data.location && data.location.latitude) {
           setCurrentLocation(data.location);
         }
@@ -58,6 +68,25 @@ export default function SettingsPage() {
       alert(err instanceof Error ? err.message : "Failed to update status");
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleUpdateHours = async () => {
+    setHoursUpdating(true);
+    setHoursError("");
+    setHoursSuccess("");
+    try {
+      await shopApiCall("PATCH", "/shop-dashboard/operating-hours", {
+        open: openTime,
+        close: closeTime,
+      });
+      setHoursSuccess("Operating hours updated");
+    } catch (err) {
+      setHoursError(
+        err instanceof Error ? err.message : "Failed to update hours"
+      );
+    } finally {
+      setHoursUpdating(false);
     }
   };
 
@@ -167,6 +196,54 @@ export default function SettingsPage() {
             Inactive
           </button>
         </div>
+      </div>
+
+      <div className="bg-[#111118] border border-zinc-800 rounded-xl p-6">
+        <h3 className="text-sm font-medium text-zinc-400 mb-3">
+          Operating Hours
+        </h3>
+        <p className="text-zinc-500 text-sm mb-4">
+          Set when your shop is open. Orders outside these hours will be
+          blocked.
+        </p>
+
+        <div className="flex items-center gap-4 mb-4">
+          <div className="flex-1">
+            <label className="block text-xs text-zinc-500 mb-1">Opens at</label>
+            <input
+              type="time"
+              value={openTime}
+              onChange={(e) => setOpenTime(e.target.value)}
+              className="w-full bg-[#060b18] border border-zinc-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs text-zinc-500 mb-1">
+              Closes at
+            </label>
+            <input
+              type="time"
+              value={closeTime}
+              onChange={(e) => setCloseTime(e.target.value)}
+              className="w-full bg-[#060b18] border border-zinc-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={handleUpdateHours}
+          disabled={hoursUpdating}
+          className="bg-amber-500 hover:bg-amber-400 disabled:bg-zinc-700 disabled:text-zinc-500 text-black px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+        >
+          {hoursUpdating ? "Saving..." : "Save Hours"}
+        </button>
+
+        {hoursError && (
+          <p className="text-red-400 text-sm mt-3">{hoursError}</p>
+        )}
+        {hoursSuccess && (
+          <p className="text-green-400 text-sm mt-3">{hoursSuccess}</p>
+        )}
       </div>
 
       <div className="bg-[#111118] border border-zinc-800 rounded-xl p-6">

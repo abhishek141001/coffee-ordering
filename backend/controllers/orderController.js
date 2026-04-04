@@ -36,6 +36,17 @@ export const createOrder = async (req, res) => {
       if (!shop || shop.status !== 'active') {
         return res.status(404).json({ error: 'Shop not found or inactive' });
       }
+
+      // Check operating hours
+      if (shop.operatingHours) {
+        const now = new Date();
+        const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        if (time < shop.operatingHours.open || time > shop.operatingHours.close) {
+          return res.status(400).json({
+            error: `Shop is closed. Operating hours: ${shop.operatingHours.open} – ${shop.operatingHours.close}`,
+          });
+        }
+      }
     }
 
     let orderItems = [];
@@ -84,8 +95,10 @@ export const createOrder = async (req, res) => {
       shopId: shop?._id || undefined,
       status: 'pending_payment',
       userLocation: userLocation && userLocation.lat && userLocation.lng
-        ? { lat: userLocation.lat, lng: userLocation.lng }
-        : undefined,
+        ? { lat: userLocation.lat, lng: userLocation.lng, address: userLocation.address || req.user.location?.address || '' }
+        : req.user.location?.coordinates?.length === 2
+          ? { lat: req.user.location.coordinates[1], lng: req.user.location.coordinates[0], address: req.user.location.address || '' }
+          : undefined,
     });
 
     let paymentLinkId, paymentLinkUrl;

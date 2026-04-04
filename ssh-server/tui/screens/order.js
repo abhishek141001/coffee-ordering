@@ -137,10 +137,16 @@ export function showOrderConfirm(stream, ctx) {
           ? cart.map((c) => ({ item: c.item, size: c.size }))
           : [{ item: order.item, size: order.size }];
 
-        const result = await createOrder(session.token, {
-          items: itemsPayload,
-          shopId,
-        });
+        const orderPayload = { items: itemsPayload, shopId };
+        if (session.location?.lat && session.location?.lng) {
+          orderPayload.userLocation = {
+            lat: session.location.lat,
+            lng: session.location.lng,
+            address: session.location.city || session.location.address || '',
+          };
+        }
+
+        const result = await createOrder(session.token, orderPayload);
 
         stream.write(CLEAR);
         stream.write(`\r\n`);

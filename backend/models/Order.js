@@ -65,6 +65,7 @@ const orderSchema = new mongoose.Schema(
     userLocation: {
       lat: { type: Number },
       lng: { type: Number },
+      address: { type: String, default: '' },
     },
   },
   { timestamps: true }

@@ -154,14 +154,21 @@ export default function OrderDetailPage() {
             </a>
           )}
           {order.userLocation && (
-            <a
-              href={`https://www.google.com/maps?q=${order.userLocation.lat},${order.userLocation.lng}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-amber-500 hover:text-amber-400 text-sm flex items-center gap-1 mt-2"
-            >
-              View customer location on Maps
-            </a>
+            <>
+              <a
+                href={`https://www.google.com/maps?q=${order.userLocation.lat},${order.userLocation.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-amber-500 hover:text-amber-400 text-sm flex items-center gap-1 mt-2"
+              >
+                View customer location on Maps
+              </a>
+              {order.userLocation.address && (
+                <p className="text-zinc-300 text-sm mt-1">
+                  🏠 {order.userLocation.address}
+                </p>
+              )}
+            </>
           )}
         </div>
 

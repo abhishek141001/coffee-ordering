@@ -51,8 +51,9 @@ export const sendOrderNotification = async (order, user, chatId) => {
 
   const shopLine = order.shopId?.name ? `*Shop:* ${order.shopId.name}\n` : '';
   const phoneLine = customerPhone ? `*Customer Phone:* [${customerPhone}](tel:${customerPhone})\n` : '';
+  const addressLine = order.userLocation?.address ? `🏠 *Address:* ${order.userLocation.address}\n` : '';
   const locationLine = order.userLocation?.lat && order.userLocation?.lng
-    ? `📍 *Location:* [View on Maps](https://www.google.com/maps?q=${order.userLocation.lat},${order.userLocation.lng})\n`
+    ? `📍 *Location:* [View on Maps](https://www.google.com/maps?q=${order.userLocation.lat},${order.userLocation.lng})\n${addressLine}`
     : '';
 
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
