@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import User from '../models/User.js';
+import { awardLoginXP } from '../services/gamificationService.js';
 
 export const signup = async (req, res) => {
   try {
@@ -26,11 +27,19 @@ export const signup = async (req, res) => {
       token,
     });
 
+    let gamification = null;
+    try {
+      gamification = await awardLoginXP(user._id);
+    } catch (err) {
+      console.error('Signup gamification error:', err);
+    }
+
     res.status(201).json({
       message: 'Account created successfully',
       username: user.username,
       phone: user.phone,
       token: user.token,
+      gamification,
     });
   } catch (error) {
     console.error('Signup error:', error);
@@ -59,11 +68,19 @@ export const login = async (req, res) => {
     user.token = crypto.randomUUID();
     await user.save();
 
+    let gamification = null;
+    try {
+      gamification = await awardLoginXP(user._id);
+    } catch (err) {
+      console.error('Login gamification error:', err);
+    }
+
     res.json({
       message: 'Login successful',
       username: user.username,
       phone: user.phone || null,
       token: user.token,
+      gamification,
     });
   } catch (error) {
     console.error('Login error:', error);

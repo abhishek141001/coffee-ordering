@@ -26,6 +26,7 @@ export function showHelp(stream, ctx) {
   stream.write(`\r\n`);
 
   stream.write(`  ${BOLD}${WHITE}SHOPS SCREEN${RESET}\r\n`);
+  stream.write(`  ${CYAN}p${RESET}           ${GRAY}View your profile & leaderboard${RESET}\r\n`);
   stream.write(`  ${CYAN}s${RESET}           ${GRAY}Check latest order status${RESET}\r\n`);
   stream.write(`  ${CYAN}h${RESET}           ${GRAY}View order history${RESET}\r\n`);
   stream.write(`  ${CYAN}?${RESET}           ${GRAY}Show this help screen${RESET}\r\n`);

@@ -6,6 +6,7 @@ import { showOrderConfirm } from './screens/order.js';
 import { showStatus } from './screens/status.js';
 import { showHistory } from './screens/history.js';
 import { showHelp } from './screens/help.js';
+import { showProfile } from './screens/profile.js';
 
 // ANSI helpers — standard bright colors for maximum terminal compatibility
 const BG_DARK = '\x1b[40m';         // standard black background

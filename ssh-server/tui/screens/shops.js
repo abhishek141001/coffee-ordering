@@ -4,6 +4,7 @@ import { showMenu } from './menu.js';
 import { showStatus } from './status.js';
 import { showHistory } from './history.js';
 import { showHelp } from './help.js';
+import { showProfile } from './profile.js';
 
 export function showShops(stream, ctx) {
   const { navigate, session } = ctx;
@@ -39,7 +40,7 @@ export function showShops(stream, ctx) {
     });
 
     stream.write(`\r\n`);
-    stream.write(`  ${GRAY}[↑↓] Navigate  [Enter] Select  [s] Status  [h] History  [?] Help  [q] Quit${RESET}\r\n`);
+    stream.write(`  ${GRAY}[↑↓] Navigate  [Enter] Select  [p] Profile  [s] Status  [h] History  [?] Help  [q] Quit${RESET}\r\n`);
   }
 
   async function load() {
@@ -84,6 +85,8 @@ export function showShops(stream, ctx) {
         session.selectedShop = shops[selected];
         navigate(showMenu);
       }
+    } else if (key === 'p') {
+      navigate(showProfile);
     } else if (key === 's') {
       navigate(showStatus);
     } else if (key === 'h') {

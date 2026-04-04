@@ -162,8 +162,14 @@ export function showLogin(stream, ctx) {
       session.token = result.token;
       session.username = result.username;
       stream.write(`  ${GREEN}✔ Welcome back, ${BOLD}${result.username}${RESET}${GREEN}!${RESET}\r\n`);
+      if (result.gamification && result.gamification.xpGained > 0) {
+        stream.write(`  ${CYAN}⚡ +${result.gamification.xpGained} XP${RESET}  ${AMBER}Login streak: ${result.gamification.loginStreak} day${result.gamification.loginStreak !== 1 ? 's' : ''}${RESET}\r\n`);
+        if (result.gamification.levelUp) {
+          stream.write(`  ${AMBER}🎉 Level up! You are now Level ${result.gamification.levelUp.to} — ${result.gamification.levelUp.rank}${RESET}\r\n`);
+        }
+      }
       stream.on('data', onData);
-      setTimeout(() => checkLocationAndProceed(), 500);
+      setTimeout(() => checkLocationAndProceed(), 1000);
     } catch (err) {
       stream.write(`  ${RED}✖ ${err.message}${RESET}\r\n`);
       stream.write(`  ${GRAY}Press any key to try again${RESET}\r\n`);
@@ -185,8 +191,11 @@ export function showLogin(stream, ctx) {
       session.token = result.token;
       session.username = result.username;
       stream.write(`  ${GREEN}✔ Account created! Welcome, ${BOLD}${result.username}${RESET}${GREEN}!${RESET}\r\n`);
+      if (result.gamification && result.gamification.xpGained > 0) {
+        stream.write(`  ${CYAN}⚡ +${result.gamification.xpGained} XP${RESET}  ${AMBER}Your journey begins!${RESET}\r\n`);
+      }
       stream.on('data', onData);
-      setTimeout(() => checkLocationAndProceed(), 500);
+      setTimeout(() => checkLocationAndProceed(), 1000);
     } catch (err) {
       stream.write(`  ${RED}✖ ${err.message}${RESET}\r\n`);
       stream.write(`  ${GRAY}Press any key to try again${RESET}\r\n`);

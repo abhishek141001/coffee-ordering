@@ -1,4 +1,4 @@
-import { CLEAR, BOLD, RESET, AMBER, BROWN, GREEN, RED, BLUE, YELLOW, GRAY, WHITE, BG_GREEN, BG_AMBER, BG_RED } from '../app.js';
+import { CLEAR, BOLD, RESET, AMBER, BROWN, GREEN, RED, BLUE, YELLOW, GRAY, WHITE, CYAN, BG_GREEN, BG_AMBER, BG_RED } from '../app.js';
 import { getOrderStatus } from '../../lib/api.js';
 import { showShops } from './shops.js';
 
@@ -15,6 +15,7 @@ function getStatusDisplay(status) {
 export function showStatus(stream, ctx) {
   const { navigate, session } = ctx;
   let interval = null;
+  let xpShownForOrder = null; // track which orderId we already showed XP for
 
   async function render() {
     try {
@@ -58,6 +59,16 @@ export function showStatus(stream, ctx) {
       } else if (data.status === 'accepted') {
         stream.write(`\r\n`);
         stream.write(`  ${GREEN}✅ Your order is being prepared!${RESET}\r\n`);
+        // Show gamification data once per order
+        if (data.gamification && xpShownForOrder !== String(data.orderId)) {
+          xpShownForOrder = String(data.orderId);
+          const g = data.gamification;
+          stream.write(`\r\n`);
+          stream.write(`  ${CYAN}⚡${RESET} ${BOLD}${WHITE}${g.rank}${RESET}  ${YELLOW}Level ${g.level}${RESET}  ${GRAY}${g.totalXP} XP${RESET}\r\n`);
+          if (g.currentStreak > 0) {
+            stream.write(`  ${RED}🔥${RESET} ${WHITE}Streak: ${GREEN}${g.currentStreak} day${g.currentStreak !== 1 ? 's' : ''}${RESET}\r\n`);
+          }
+        }
       } else if (data.status === 'rejected') {
         stream.write(`\r\n`);
         stream.write(`  ${RED}❌ Order was rejected by the shop.${RESET}\r\n`);

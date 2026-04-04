@@ -1,5 +1,6 @@
 import Order from '../models/Order.js';
 import { processRefund } from './razorpayService.js';
+import { awardOrderXP } from './gamificationService.js';
 
 export async function acceptOrder(orderId, shopId, eta) {
   const order = await Order.findOneAndUpdate(
@@ -15,7 +16,14 @@ export async function acceptOrder(orderId, shopId, eta) {
     return { success: false, error: `Order already ${existing.status}` };
   }
 
-  return { success: true, order };
+  let gamification = null;
+  try {
+    gamification = await awardOrderXP(order.userId, order);
+  } catch (err) {
+    console.error('Gamification error on order accept:', err);
+  }
+
+  return { success: true, order, gamification };
 }
 
 export async function rejectOrder(orderId, shopId) {

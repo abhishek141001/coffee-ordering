@@ -56,3 +56,11 @@ export async function getOrderStatus(token) {
 export async function getOrderHistory(token) {
   return request('GET', '/order/history', null, token);
 }
+
+export async function getGamificationProfile(token) {
+  return request('GET', '/gamification/profile', null, token);
+}
+
+export async function getLeaderboard(limit = 20) {
+  return request('GET', `/gamification/leaderboard?limit=${limit}`);
+}

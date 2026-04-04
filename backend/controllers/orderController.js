@@ -1,4 +1,5 @@
 import Order from '../models/Order.js';
+import GameProfile from '../models/GameProfile.js';
 import Shop from '../models/Shop.js';
 import { createPaymentLink } from '../services/razorpayService.js';
 import { MENU, SIZES, getPrice } from '../config/menu.js';
@@ -142,6 +143,22 @@ export const getStatus = async (req, res) => {
       return res.status(404).json({ error: 'No orders found' });
     }
 
+    let gamification = null;
+    try {
+      const profile = await GameProfile.findOne({ userId: req.user._id }).lean();
+      if (profile) {
+        gamification = {
+          totalXP: profile.totalXP,
+          level: profile.level,
+          rank: profile.rank,
+          currentStreak: profile.currentStreak,
+          longestStreak: profile.longestStreak,
+        };
+      }
+    } catch (err) {
+      // non-blocking
+    }
+
     res.json({
       orderId: order._id,
       item: order.item,
@@ -155,6 +172,7 @@ export const getStatus = async (req, res) => {
       shopName: order.shopId?.name || null,
       shopPhone: order.shopId?.owner?.phone || null,
       createdAt: order.createdAt,
+      gamification,
     });
   } catch (error) {
     console.error('Get status error:', error);
