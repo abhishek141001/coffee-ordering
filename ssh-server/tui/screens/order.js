@@ -1,3 +1,4 @@
+import QRCode from 'qrcode';
 import { CLEAR, BOLD, RESET, AMBER, BROWN, GREEN, RED, YELLOW, CYAN, GRAY, WHITE } from '../app.js';
 import { createOrder, requestLocationToken, getLocationStatus } from '../../lib/api.js';
 import { showStatus } from './status.js';
@@ -148,7 +149,18 @@ export function showOrderConfirm(stream, ctx) {
         stream.write(`  ${BOLD}Order ID:${RESET} ${GRAY}${result.orderId}${RESET}\r\n`);
         stream.write(`  ${BOLD}Total:${RESET}    ${YELLOW}₹${result.totalPrice || result.price}${RESET}\r\n`);
         stream.write(`\r\n`);
-        stream.write(`  ${BOLD}💳 Complete payment:${RESET}\r\n`);
+        stream.write(`  ${BOLD}💳 Scan QR to pay:${RESET}\r\n`);
+
+        try {
+          const qrString = await QRCode.toString(result.paymentLink, { type: 'terminal', small: true });
+          // Convert newlines to \r\n for SSH stream and indent
+          const qrLines = qrString.split('\n').map((line) => `  ${line}`).join('\r\n');
+          stream.write(`${qrLines}\r\n`);
+        } catch {
+          // QR generation failed, skip
+        }
+
+        stream.write(`  ${BOLD}Or open payment link:${RESET}\r\n`);
         stream.write(`  ${CYAN}${result.paymentLink}${RESET}\r\n`);
         stream.write(`\r\n`);
         stream.write(`  ${GRAY}[Enter] Check status  [q] Quit${RESET}\r\n`);

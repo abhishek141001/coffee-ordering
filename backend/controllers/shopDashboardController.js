@@ -254,6 +254,7 @@ export const getShopDetails = async (req, res) => {
       name: shop.name,
       slug: shop.slug,
       status: shop.status,
+      operatingHours: shop.operatingHours,
       location: {
         latitude: shop.location.coordinates[1],
         longitude: shop.location.coordinates[0],
@@ -263,6 +264,33 @@ export const getShopDetails = async (req, res) => {
   } catch (error) {
     console.error('Get shop details error:', error);
     res.status(500).json({ error: 'Failed to fetch shop details' });
+  }
+};
+
+// --- Operating Hours ---
+
+export const updateOperatingHours = async (req, res) => {
+  try {
+    const { open, close } = req.body;
+    const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+    if (!open || !close) {
+      return res.status(400).json({ error: 'open and close times are required' });
+    }
+    if (!timeRegex.test(open) || !timeRegex.test(close)) {
+      return res.status(400).json({ error: 'Times must be in HH:MM format (e.g. 08:00)' });
+    }
+
+    req.shop.operatingHours = { open, close };
+    await req.shop.save();
+
+    res.json({
+      message: 'Operating hours updated',
+      operatingHours: req.shop.operatingHours,
+    });
+  } catch (error) {
+    console.error('Update operating hours error:', error);
+    res.status(500).json({ error: 'Failed to update operating hours' });
   }
 };
 

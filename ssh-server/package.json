@@ -10,6 +10,7 @@
     "keygen": "node -e \"import('ssh2').then(m => { const { utils } = m; const key = utils.generateKeyPairSync('ed25519'); require('fs').writeFileSync('host.key', key.private); console.log('Host key generated'); })\""
   },
   "dependencies": {
+    "qrcode": "^1.5.4",
     "ssh2": "^1.16.0"
   }
 }

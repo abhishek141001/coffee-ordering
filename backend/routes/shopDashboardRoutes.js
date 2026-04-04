@@ -14,6 +14,7 @@ import {
   updateShopLocation,
   getShopDetails,
   getStats,
+  updateOperatingHours,
 } from '../controllers/shopDashboardController.js';
 
 const router = Router();
@@ -37,6 +38,7 @@ router.patch('/menu/:itemId/availability', toggleMenuItemAvailability);
 router.get('/details', getShopDetails);
 router.patch('/status', updateShopStatus);
 router.patch('/location', updateShopLocation);
+router.patch('/operating-hours', updateOperatingHours);
 router.get('/stats', getStats);
 
 export default router;

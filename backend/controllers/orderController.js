@@ -1,7 +1,7 @@
 import Order from '../models/Order.js';
 import GameProfile from '../models/GameProfile.js';
 import Shop from '../models/Shop.js';
-import { createPaymentLink } from '../services/razorpayService.js';
+import { createPaymentLink, createUPIQRCode } from '../services/razorpayService.js';
 import { MENU, SIZES, getPrice } from '../config/menu.js';
 
 function validateItemAgainstShop(shop, itemName, size) {
@@ -113,6 +113,22 @@ export const createOrder = async (req, res) => {
     }
 
     order.razorpay_order_id = paymentLinkId;
+
+    // Create UPI QR code (non-blocking — fallback to payment link if it fails)
+    let qrCodeImageUrl = null;
+    try {
+      const qrResult = await createUPIQRCode({
+        amount: totalPrice,
+        orderId: order._id.toString(),
+        description,
+        customerName: req.user.username,
+      });
+      order.razorpay_qr_id = qrResult.qrCodeId;
+      qrCodeImageUrl = qrResult.qrImageUrl;
+    } catch (qrError) {
+      console.error('Razorpay QR code creation failed (non-blocking):', qrError.message);
+    }
+
     await order.save();
 
     res.json({
@@ -124,6 +140,7 @@ export const createOrder = async (req, res) => {
       totalPrice,
       shopName: shop?.name || null,
       paymentLink: paymentLinkUrl,
+      qrCodeImageUrl,
       message: 'Order created! Complete payment using the link below.',
     });
   } catch (error) {

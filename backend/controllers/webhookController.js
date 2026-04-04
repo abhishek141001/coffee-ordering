@@ -81,6 +81,42 @@ export const razorpayWebhook = async (req, res) => {
       return res.status(200).json({ status: 'ok' });
     }
 
+    // Handle UPI QR code payment
+    if (event.event === 'qr_code.credited') {
+      const qrEntity = event.payload.qr_code?.entity;
+      const payment = event.payload.payment?.entity;
+      const orderId = qrEntity?.notes?.order_id || qrEntity?.customer_id;
+      const paymentId = payment?.id;
+
+      if (!orderId) {
+        console.error('No order_id found in QR code webhook payload');
+        return res.status(200).json({ status: 'ignored' });
+      }
+
+      const order = await Order.findById(orderId);
+
+      if (!order) {
+        console.error(`Order not found for QR payment: ${orderId}`);
+        return res.status(200).json({ status: 'order_not_found' });
+      }
+
+      if (order.status !== 'pending_payment') {
+        return res.status(200).json({ status: 'already_processed' });
+      }
+
+      order.status = 'paid';
+      order.razorpay_payment_id = paymentId;
+      await order.save();
+
+      try {
+        await notifyShop(order);
+      } catch (telegramError) {
+        console.error('Failed to send Telegram notification:', telegramError);
+      }
+
+      return res.status(200).json({ status: 'ok' });
+    }
+
     res.status(200).json({ status: 'event_ignored' });
   } catch (error) {
     console.error('Razorpay webhook error:', error);

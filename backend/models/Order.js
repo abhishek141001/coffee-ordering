@@ -48,6 +48,9 @@ const orderSchema = new mongoose.Schema(
     razorpay_order_id: {
       type: String,
     },
+    razorpay_qr_id: {
+      type: String,
+    },
     razorpay_payment_id: {
       type: String,
     },

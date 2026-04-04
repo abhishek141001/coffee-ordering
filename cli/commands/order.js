@@ -1,8 +1,19 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import qrcode from 'qrcode-terminal';
 import { apiCall, publicApiCall } from '../lib/api.js';
 import { getAuthConfig, getLocation } from '../lib/config.js';
 import { success, error, divider, formatPrice, capitalize, jsonOutput } from '../lib/ui.js';
+
+function printQRCode(url) {
+  return new Promise((resolve) => {
+    qrcode.generate(url, { small: true }, (qr) => {
+      console.log('');
+      console.log(qr);
+      resolve();
+    });
+  });
+}
 
 const FALLBACK_ITEMS = ['cappuccino', 'latte', 'espresso'];
 const FALLBACK_SIZES = ['small', 'medium', 'large'];
@@ -135,7 +146,9 @@ export function registerOrderCommand(program) {
         console.log(`  ${chalk.bold('Price:')}    ${chalk.yellow(formatPrice(data.price))}`);
         console.log(`  ${chalk.bold('Order ID:')} ${chalk.gray(data.orderId)}`);
         console.log('');
-        console.log(chalk.bold('  💳 Complete payment:'));
+        console.log(chalk.bold('  💳 Scan QR to pay:'));
+        await printQRCode(data.paymentLink);
+        console.log(chalk.bold('  Or open payment link:'));
         console.log(`  ${chalk.cyan.underline(data.paymentLink)}`);
         console.log('');
         console.log(chalk.gray('  After payment, run: coffee status --wait'));
@@ -238,7 +251,9 @@ export function registerOrderCommand(program) {
       }
       console.log(`  ${chalk.bold('Order ID:')} ${chalk.gray(data.orderId)}`);
       console.log('');
-      console.log(chalk.bold('  💳 Complete payment:'));
+      console.log(chalk.bold('  💳 Scan QR to pay:'));
+      await printQRCode(data.paymentLink);
+      console.log(chalk.bold('  Or open payment link:'));
       console.log(`  ${chalk.cyan.underline(data.paymentLink)}`);
       console.log('');
       console.log(chalk.gray('  After payment, run: coffee status --wait'));

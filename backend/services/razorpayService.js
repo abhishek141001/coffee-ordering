@@ -34,6 +34,36 @@ export const createPaymentLink = async ({ amount, orderId, description, customer
   }
 };
 
+export const createUPIQRCode = async ({ amount, orderId, description, customerName }) => {
+  try {
+    const closeBy = Math.floor(Date.now() / 1000) + 15 * 60; // 15 minutes from now
+
+    const qrCode = await razorpay.qrCode.create({
+      type: 'upi_qr',
+      name: customerName || 'Customer',
+      usage: 'single_use',
+      fixed_amount: true,
+      payment_amount: amount * 100,
+      description,
+      customer_id: orderId,
+      close_by: closeBy,
+      notes: {
+        order_id: orderId,
+      },
+    });
+
+    return {
+      qrCodeId: qrCode.id,
+      qrImageUrl: qrCode.image_url,
+    };
+  } catch (error) {
+    const message = error?.error?.description || error?.message || 'Razorpay QR code error';
+    const err = new Error(message);
+    err.statusCode = error?.statusCode || 500;
+    throw err;
+  }
+};
+
 export const processRefund = async ({ paymentId, amount }) => {
   try {
     const refund = await razorpay.payments.refund(paymentId, {
