@@ -26,7 +26,7 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
       BASE_URL: https://caffeineoperator.online/api
-      DASHBOARD_URL: https://caffeineoperator.online/dashboard
+      DASHBOARD_URL: https://caffeineoperator.online
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
 
