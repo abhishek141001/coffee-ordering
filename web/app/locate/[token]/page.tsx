@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, use } from "react";
 
-type Status = "requesting" | "saving" | "success" | "error" | "denied";
+type Status = "requesting" | "address" | "saving" | "success" | "error" | "denied";
 
 export default function LocatePage({
   params,
@@ -12,9 +12,11 @@ export default function LocatePage({
   const { token } = use(params);
   const [status, setStatus] = useState<Status>("requesting");
   const [errorMsg, setErrorMsg] = useState("");
+  const [address, setAddress] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const saveLocation = useCallback(
-    async (lat: number, lng: number) => {
+    async (lat: number, lng: number, addr: string) => {
       setStatus("saving");
       try {
         const res = await fetch("/api/auth/location", {
@@ -24,6 +26,7 @@ export default function LocatePage({
             locationToken: token,
             latitude: lat,
             longitude: lng,
+            address: addr,
           }),
         });
         const data = await res.json();
@@ -55,7 +58,8 @@ export default function LocatePage({
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        saveLocation(position.coords.latitude, position.coords.longitude);
+        setCoords({ lat: position.coords.latitude, lng: position.coords.longitude });
+        setStatus("address");
       },
       (err) => {
         if (err.code === err.PERMISSION_DENIED) {
@@ -70,7 +74,7 @@ export default function LocatePage({
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
-  }, [saveLocation]);
+  }, []);
 
   useEffect(() => {
     requestLocation();
@@ -117,6 +121,58 @@ export default function LocatePage({
               <p className="text-zinc-400 text-sm">
                 Please allow location access when prompted.
               </p>
+            </>
+          )}
+
+          {status === "address" && (
+            <>
+              <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-green-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </div>
+              <h2 className="text-lg font-semibold text-white mb-2">
+                GPS location captured!
+              </h2>
+              <p className="text-zinc-400 text-sm mb-4">
+                Add your address details so the shop can find you.
+              </p>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="House/Building no, Floor, Landmark"
+                className="w-full bg-[#060b18] border border-zinc-700 text-white rounded-lg px-4 py-3 text-sm mb-4 focus:outline-none focus:border-amber-500 placeholder:text-zinc-600"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={() => coords && saveLocation(coords.lat, coords.lng, address.trim())}
+                  className="flex-1 bg-amber-500 hover:bg-amber-400 text-black px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+                >
+                  Save Location
+                </button>
+                <button
+                  onClick={() => coords && saveLocation(coords.lat, coords.lng, "")}
+                  className="text-zinc-500 hover:text-zinc-300 px-4 py-2.5 text-sm transition-colors"
+                >
+                  Skip
+                </button>
+              </div>
             </>
           )}
 
